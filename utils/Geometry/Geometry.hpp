@@ -1,3 +1,5 @@
+#pragma once
+
 #include <iostream>
 #include <math.h>
 #include <vector>
@@ -21,7 +23,8 @@ protected:
 public:
     GeomObject(sf::Vector2f pos_);
 
-    virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls) = 0;
+    virtual void scale(GeomObject*& c, float p) = 0;
+    virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls, float size) = 0;
     virtual float intersect(sf::Vector2f rp, sf::Vector2f rv, float rl) = 0;
 };
 
@@ -35,7 +38,8 @@ protected:
 public:
     SphearObj(sf::Vector2f pos_, float size);
 
-    virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls);
+    virtual void scale(GeomObject*& c, float p);
+    virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls, float size);
     virtual float intersect(sf::Vector2f rp, sf::Vector2f rv, float rl);
 };
 
@@ -51,7 +55,8 @@ public:
     LineObj(sf::Vector2f pos_, float l, float al = 0);
     LineObj(float a1_, float b1_, float a2_, float b2_);
 
-    virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls);
+    virtual void scale(GeomObject*& c, float p);
+    virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls, float size);
     virtual float intersect(sf::Vector2f rp, sf::Vector2f rv, float rl);
 };
 
@@ -67,7 +72,8 @@ protected:
 public:
     BoxObj(sf::Vector2f pos_, float a_, float b_, float al_=0);
 
-    virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls);
+    virtual void scale(GeomObject*& c, float p);
+    virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls, float size);
     virtual float intersect(sf::Vector2f rp, sf::Vector2f rv, float rl);
 };
 
@@ -83,6 +89,7 @@ protected:
 public:
     RectObj(sf::Vector2f pos_, float a_, float b_, float al_=0);
 
-    virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls);
+    virtual void scale(GeomObject*& c, float p);
+    virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls, float size);
     virtual float intersect(sf::Vector2f rp, sf::Vector2f rv, float rl);
 };

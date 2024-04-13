@@ -14,7 +14,6 @@ Map::Map(std::vector<GeomObject*> objects_, Character player_, float p):
     back(sf::Vector2f(p*W, p*H)), objects(objects_.size()), 
     conture(sf::LineStrip, player_.ray_kol+2), camera(p*player_.size), kol(player_.ray_kol+2), part(p)
 {
-    // back.setFillColor(sf::Color(220, 220, 220));
     back.setOutlineThickness(3);
     back.setOutlineColor(sf::Color::Black);
     camera.setFillColor(sf::Color::Black);

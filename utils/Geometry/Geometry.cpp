@@ -22,16 +22,19 @@ void SphearObj::draw(sf::RenderTarget& target, sf::RenderStates states) const
     target.draw(obj, states);
 }
 
+void SphearObj::scale(GeomObject*& c, float p)
+{
+    c = new SphearObj(p*pos, p*r);
+}
 SphearObj::SphearObj(sf::Vector2f pos_, float size): GeomObject(pos_), r(size), obj(size)
 {
     obj.move(sf::Vector2f(pos_.x-r, pos_.y-r));
     obj.setFillColor(sf::Color::Blue);
 }
-
-std::vector<sf::Vector2f> SphearObj::collision(sf::Vector2f pls)
+std::vector<sf::Vector2f> SphearObj::collision(sf::Vector2f pls, float size)
 {
     float d = mod(pls-pos) - r;
-    if(d>3) return {};
+    if(d>size) return {};
     return {ort(pls-pos)};
 }
 float SphearObj::intersect(sf::Vector2f rp, sf::Vector2f rv, float rl)
@@ -61,11 +64,15 @@ LineObj::LineObj(float a1_, float b1_, float a2_, float b2_): GeomObject(sf::Vec
     obj[1] = sf::Vertex (sf::Vector2f(a2, b2), sf::Color(220,220,0));
 }
 
-std::vector<sf::Vector2f> LineObj::collision(sf::Vector2f pls)
+void LineObj::scale(GeomObject*& c, float p)
+{
+    c = new LineObj(p*a1, p*b1, p*a2, p*b2);
+}
+std::vector<sf::Vector2f> LineObj::collision(sf::Vector2f pls, float size)
 {
     sf::Vector2f v=sf::Vector2f(a2-a1, b2-b1), ax = pls-obj[0].position;
     float d = dat(ort(v), ax);
-    if(abs(d)>3 || mod(ax)>mod(v) || mod(pls-obj[1].position)>mod(v)) return {};
+    if(abs(d)>size || mod(ax)>mod(v) || mod(pls-obj[1].position)>mod(v)) return {};
     sf::Vector2f n=norm(v);
     return {ort(n * dot(n, ax))};
 }
@@ -96,7 +103,11 @@ BoxObj::BoxObj(sf::Vector2f pos_, float a_, float b_, float al_): GeomObject(pos
     obj[4] = sf::Vertex (trans(pos, sf::Vector2f(pos.x-a/2, pos.y-b/2), al), sf::Color(0,220,220));
 }
 
-std::vector<sf::Vector2f> BoxObj::collision(sf::Vector2f pls)
+void BoxObj::scale(GeomObject*& c, float p)
+{
+    c = new BoxObj(p*pos, p*a, p*b, al);
+}
+std::vector<sf::Vector2f> BoxObj::collision(sf::Vector2f pls, float size)
 {
     float d, s;
     sf::Vector2f ax, v(std::cos(M_PI*al/180), std::sin(M_PI*al/180)), n=norm(v);
@@ -106,7 +117,7 @@ std::vector<sf::Vector2f> BoxObj::collision(sf::Vector2f pls)
         s = a - (a-b)*(i%2);
         ax = pls-obj[i].position;
         d = dat(v, ax);
-        if(!(abs(d)>3 || mod(ax)>mod(s*v)+1 || mod(pls-obj[i+1].position)>mod(s*v)+1)) p.push_back(ort(n * dot(n, ax)));
+        if(!(abs(d)>size || mod(ax)>mod(s*v)+size/3 || mod(pls-obj[i+1].position)>mod(s*v)+size/3)) p.push_back(ort(n * dot(n, ax)));
         std::swap(v, n); 
     }
     return p;
@@ -134,6 +145,7 @@ void RectObj::draw(sf::RenderTarget& target, sf::RenderStates states) const
     states.texture = NULL;
     target.draw(obj, states);
 }
+
 RectObj::RectObj(sf::Vector2f pos_, float a_, float b_, float al_): GeomObject(pos_), obj(sf::Vector2f(a_, b_)), a(a_), b(b_), al(al_)
 {
     obj.move(trans(pos, sf::Vector2f(pos.x-a/2, pos.y-b/2), al));
@@ -141,7 +153,11 @@ RectObj::RectObj(sf::Vector2f pos_, float a_, float b_, float al_): GeomObject(p
     obj.setFillColor(sf::Color::Blue);
 }
 
-std::vector<sf::Vector2f> RectObj::collision(sf::Vector2f pls)
+void RectObj::scale(GeomObject*& c, float p)
+{
+    c = new RectObj(p*pos, p*a, p*b, al);
+}
+std::vector<sf::Vector2f> RectObj::collision(sf::Vector2f pls, float size)
 {
     sf::Vector2f o1=pls-trans(pos, sf::Vector2f(pos.x-a/2, pos.y-b/2), al);
     sf::Vector2f o2=pls-trans(pos, sf::Vector2f(pos.x+a/2, pos.y-b/2), al);
@@ -150,16 +166,16 @@ std::vector<sf::Vector2f> RectObj::collision(sf::Vector2f pls)
     sf::Vector2f v(std::cos(M_PI*al/180), std::sin(M_PI*al/180));
     sf::Vector2f n=norm(v);
     float d = dat(v, o1);
-    if(!(abs(d)>3 || mod(o1)>mod(a*v)+1 || mod(o2)>mod(a*v)+1)) return {ort(n * dot(n, o1))};
+    if(!(abs(d)>size || mod(o1)>mod(a*v)+size/3 || mod(o2)>mod(a*v)+size/3)) return {ort(n * dot(n, o1))};
+    // if(abs(d)<20) std::cout<<d<<" "<<d<<" "<<ax.x<<" "<<ax.y<<'\n';
     d = dat(n, o2);
-    if(!(abs(d)>3 || mod(o2)>mod(b*n)+1 || mod(o3)>mod(b*n)+1)) return {ort(v * dot(v, o2))};
+    if(!(abs(d)>size || mod(o2)>mod(b*n)+size/3 || mod(o3)>mod(b*n)+size/3)) return {ort(v * dot(v, o2))};
     d = dat(v, o3);
-    if(!(abs(d)>3 || mod(o3)>mod(a*v)+1 || mod(o4)>mod(a*v)+1)) return {ort(n * dot(n, o3))};
+    if(!(abs(d)>size || mod(o3)>mod(a*v)+size/3 || mod(o4)>mod(a*v)+size/3)) return {ort(n * dot(n, o3))};
     d = dat(n, o4);
-    if(!(abs(d)>3 || mod(o4)>mod(b*n)+1 || mod(o1)>mod(b*n)+1)) return {ort(v * dot(v, o4))};
+    if(!(abs(d)>size || mod(o4)>mod(b*n)+size/3 || mod(o1)>mod(b*n)+size/3)) return {ort(v * dot(v, o4))};
     return {};
 }
-
 float RectObj::intersect(sf::Vector2f rp, sf::Vector2f rv, float rl)
 {
     float ox = rl;
