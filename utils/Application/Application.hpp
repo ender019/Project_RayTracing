@@ -9,7 +9,7 @@ private:
     sf::RectangleShape sky;
     std::vector<sf::RectangleShape> vission;
     int kol;
-    float dal=600;
+    float dal=800;
 private:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 public:
@@ -27,7 +27,6 @@ private:
     sf::Clock clock;
     sf::Vector2f cam_pos;
     sf::Vector2f center;
-    int discretization;
     std::vector<float> dist;
     FPS counter;
     Character camera;

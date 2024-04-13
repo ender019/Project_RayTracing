@@ -32,7 +32,7 @@ void Map::reload(std::vector<GeomObject*> objects_)
         for (int i = 0; i < objects.size(); i++){delete objects[i];}
     }
     objects.resize(objects_.size());
-    for (int i = 0; i < objects.size(); i++){objects_[i]->scale(objects[i], part);}
+    for (int i = 0; i < objects.size(); i++){objects_[i]->scale(objects[i]);}
 }
 
 void Map::update(Character player)

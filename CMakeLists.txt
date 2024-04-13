@@ -12,6 +12,7 @@ set(SOURCE
     utils/Character/Character.cpp
     utils/Interface/Interface.cpp
     utils/Application/Application.cpp
+    utils/Application/Settings.cpp
 	main.cpp
 )
 
@@ -20,6 +21,7 @@ set(HEADERS
     utils/Character/Character.hpp
     utils/Interface/Interface.hpp
     utils/Application/Application.hpp
+    utils/Application/Settings.hpp
 )
 
 add_executable(${PROJECT_NAME} ${SOURCE} ${HEADERS})

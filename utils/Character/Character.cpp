@@ -19,9 +19,9 @@ void Character::draw(sf::RenderTarget& target, sf::RenderStates states) const
     target.draw(conture, states);
 }
 
-Character::Character(sf::Vector2f pos_, int kol_, float dist_, float size_, float al_, float nal_): 
-    camera(3.f), conture(sf::LineStrip, kol_+2), rays(kol_, sf::Vector2f(std::cos(M_PI*nal_/180), std::sin(M_PI*nal_/180))),
-    pos(pos_), ray_kol(kol_), dist(dist_), size(size_), vis_al(al_), nal(nal_)
+Character::Character(sf::Vector2f pos_, float nal_): 
+    camera(3.f), conture(sf::LineStrip, sett->discretization+2), rays(sett->discretization, sf::Vector2f(std::cos(M_PI*nal_/180), std::sin(M_PI*nal_/180))),
+    pos(pos_), ray_kol(sett->discretization), dist(sett->len), size(sett->size), vis_al(sett->visual_al), nal(nal_)
 {
     camera.setFillColor(sf::Color::Black);
     camera.move(pos-sf::Vector2f(size, size)); 
@@ -47,7 +47,7 @@ void Character::move(std::vector<GeomObject*> objects, int p)
     sf::Vector2f l=vec, r=vec;
     for (int i = 0; i < objects.size(); i++)
     {
-        n = objects[i]->collision(pos, size);
+        n = objects[i]->collision(pos);
         for (int j = 0; j < n.size(); j++)
         {
             if(dot(vec, n[j])<dot(vec, r) && dat(vec, n[j])>0) {r = n[j];}
@@ -69,7 +69,7 @@ std::vector<float> Character::tracing(std::vector<GeomObject*> objects)
     {
         for (int j = 0; j < objects.size(); j++)
         {
-            float ox = objects[j]->intersect(pos, rays[i], dist);
+            float ox = objects[j]->intersect(pos, rays[i]);
             mat[i] = std::min(ox, mat[i]);
         }
         conture[i+1].color = sf::Color::Red;

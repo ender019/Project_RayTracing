@@ -22,30 +22,30 @@ void SphearObj::draw(sf::RenderTarget& target, sf::RenderStates states) const
     target.draw(obj, states);
 }
 
-void SphearObj::scale(GeomObject*& c, float p)
+void SphearObj::scale(GeomObject*& c)
 {
-    c = new SphearObj(p*pos, p*r);
+    c = new SphearObj(sett->scale*pos, sett->scale*r);
 }
-SphearObj::SphearObj(sf::Vector2f pos_, float size): GeomObject(pos_, sf::Color::Blue), r(size), obj(size)
+SphearObj::SphearObj(sf::Vector2f pos_, float r_): GeomObject(pos_, sf::Color::Blue), r(r_), obj(r_)
 {
     obj.move(sf::Vector2f(pos_.x-r, pos_.y-r));
     obj.setFillColor(rgb);
 }
-std::vector<sf::Vector2f> SphearObj::collision(sf::Vector2f pls, float size)
+std::vector<sf::Vector2f> SphearObj::collision(sf::Vector2f pls)
 {
     float d = mod(pls-pos) - r;
-    if(d>size) return {};
+    if(d>sett->size) return {};
     return {ort(pls-pos)};
 }
-float SphearObj::intersect(sf::Vector2f rp, sf::Vector2f rv, float rl)
+float SphearObj::intersect(sf::Vector2f rp, sf::Vector2f rv)
 {
     sf::Vector2f aov=pos-rp;
     float ah = dot(aov, rv);
     float ao = dot(aov,aov);
     float bh = r*r - ao + ah*ah;
-    if(bh < 0 || ah<0) return rl;
+    if(bh < 0 || ah<0) return sett->len;
     float h = sqrt(bh);
-    return std::min(ah - h, rl);
+    return std::min(ah - h, sett->len);
 }
 
 
@@ -69,27 +69,27 @@ LineObj::LineObj(sf::Vector2f pos_, float l, float al):
     *this = LineObj(pos_.x, pos_.y, pos_.x + l*std::cos(M_PI*al/180), pos_.y + l*std::sin(M_PI*al/180));
 }
 
-void LineObj::scale(GeomObject*& c, float p)
+void LineObj::scale(GeomObject*& c)
 {
-    c = new LineObj(p*a1, p*b1, p*a2, p*b2);
+    c = new LineObj(sett->scale*a1, sett->scale*b1, sett->scale*a2, sett->scale*b2);
 }
-std::vector<sf::Vector2f> LineObj::collision(sf::Vector2f pls, float size)
+std::vector<sf::Vector2f> LineObj::collision(sf::Vector2f pls)
 {
     sf::Vector2f v=sf::Vector2f(a2-a1, b2-b1), ax = pls-obj[0].position;
     float d = dat(ort(v), ax);
-    if(abs(d)>size || mod(ax)>mod(v) || mod(pls-obj[1].position)>mod(v)) return {};
+    if(abs(d)>sett->size || mod(ax)>mod(v) || mod(pls-obj[1].position)>mod(v)) return {};
     sf::Vector2f n=norm(v);
     return {ort(n * dot(n, ax))};
 }
-float LineObj::intersect(sf::Vector2f rp, sf::Vector2f rv, float rl)
+float LineObj::intersect(sf::Vector2f rp, sf::Vector2f rv)
 {
     sf::Vector2f v=ort(sf::Vector2f(a2-a1, b2-b1));
     sf::Vector2f n=norm(v);
     float pa = dot(n, rv);
     float h = dat(v, rp-pos);
     sf::Vector2f x = rp + rv*abs(h/pa);
-    if(lin(sf::Vector2f(a1, b1), sf::Vector2f(a2, b2), x) && rl>=abs(h/pa)) {return abs(h/pa);}
-    return rl;
+    if(lin(sf::Vector2f(a1, b1), sf::Vector2f(a2, b2), x) && sett->len>=abs(h/pa)) {return abs(h/pa);}
+    return sett->len;
 }
 
 
@@ -108,11 +108,11 @@ BoxObj::BoxObj(sf::Vector2f pos_, float a_, float b_, float al_): GeomObject(pos
     obj[4] = sf::Vertex (trans(pos, sf::Vector2f(pos.x-a/2, pos.y-b/2), al), rgb);
 }
 
-void BoxObj::scale(GeomObject*& c, float p)
+void BoxObj::scale(GeomObject*& c)
 {
-    c = new BoxObj(p*pos, p*a, p*b, al);
+    c = new BoxObj(sett->scale*pos, sett->scale*a, sett->scale*b, al);
 }
-std::vector<sf::Vector2f> BoxObj::collision(sf::Vector2f pls, float size)
+std::vector<sf::Vector2f> BoxObj::collision(sf::Vector2f pls)
 {
     float d, s;
     sf::Vector2f ax, v(std::cos(M_PI*al/180), std::sin(M_PI*al/180)), n=norm(v);
@@ -122,14 +122,14 @@ std::vector<sf::Vector2f> BoxObj::collision(sf::Vector2f pls, float size)
         s = a - (a-b)*(i%2);
         ax = pls-obj[i].position;
         d = dat(v, ax);
-        if(!(abs(d)>size || mod(ax)>mod(s*v)+size/3 || mod(pls-obj[i+1].position)>mod(s*v)+size/3)) p.push_back(ort(n * dot(n, ax)));
+        if(!(abs(d)>sett->size || mod(ax)>mod(s*v)+sett->size/3 || mod(pls-obj[i+1].position)>mod(s*v)+sett->size/3)) p.push_back(ort(n * dot(n, ax)));
         std::swap(v, n); 
     }
     return p;
 }
-float BoxObj::intersect(sf::Vector2f rp, sf::Vector2f rv, float rl)
+float BoxObj::intersect(sf::Vector2f rp, sf::Vector2f rv)
 {
-    float pa, h, ox = rl;
+    float pa, h, ox = sett->len;
     sf::Vector2f o, x, v(std::cos(M_PI*al/180), std::sin(M_PI*al/180)), n=norm(v);
     for (int i = 0; i < 4; i++)
     {
@@ -137,7 +137,7 @@ float BoxObj::intersect(sf::Vector2f rp, sf::Vector2f rv, float rl)
         pa = dot(n, rv);
         h = dat(v, rp-o);
         x = rp + rv*abs(h/pa);
-        if(lin(o, obj[i+1].position, x) && rl>=abs(h/pa)) {ox=std::min(ox, abs(h/pa));}
+        if(lin(o, obj[i+1].position, x) && sett->len>=abs(h/pa)) {ox=std::min(ox, abs(h/pa));}
         std::swap(v, n);
     }
     return ox;
@@ -158,11 +158,11 @@ RectObj::RectObj(sf::Vector2f pos_, float a_, float b_, float al_): GeomObject(p
     obj.setFillColor(rgb);
 }
 
-void RectObj::scale(GeomObject*& c, float p)
+void RectObj::scale(GeomObject*& c)
 {
-    c = new RectObj(p*pos, p*a, p*b, al);
+    c = new RectObj(sett->scale*pos, sett->scale*a, sett->scale*b, al);
 }
-std::vector<sf::Vector2f> RectObj::collision(sf::Vector2f pls, float size)
+std::vector<sf::Vector2f> RectObj::collision(sf::Vector2f pls)
 {
     sf::Vector2f o1=pls-trans(pos, sf::Vector2f(pos.x-a/2, pos.y-b/2), al);
     sf::Vector2f o2=pls-trans(pos, sf::Vector2f(pos.x+a/2, pos.y-b/2), al);
@@ -171,38 +171,37 @@ std::vector<sf::Vector2f> RectObj::collision(sf::Vector2f pls, float size)
     sf::Vector2f v(std::cos(M_PI*al/180), std::sin(M_PI*al/180));
     sf::Vector2f n=norm(v);
     float d = dat(v, o1);
-    if(!(abs(d)>size || mod(o1)>mod(a*v)+size/3 || mod(o2)>mod(a*v)+size/3)) return {ort(n * dot(n, o1))};
-    // if(abs(d)<20) std::cout<<d<<" "<<d<<" "<<ax.x<<" "<<ax.y<<'\n';
+    if(!(abs(d)>sett->size || mod(o1)>mod(a*v)+sett->size/3 || mod(o2)>mod(a*v)+sett->size/3)) return {ort(n * dot(n, o1))};
     d = dat(n, o2);
-    if(!(abs(d)>size || mod(o2)>mod(b*n)+size/3 || mod(o3)>mod(b*n)+size/3)) return {ort(v * dot(v, o2))};
+    if(!(abs(d)>sett->size || mod(o2)>mod(b*n)+sett->size/3 || mod(o3)>mod(b*n)+sett->size/3)) return {ort(v * dot(v, o2))};
     d = dat(v, o3);
-    if(!(abs(d)>size || mod(o3)>mod(a*v)+size/3 || mod(o4)>mod(a*v)+size/3)) return {ort(n * dot(n, o3))};
+    if(!(abs(d)>sett->size || mod(o3)>mod(a*v)+sett->size/3 || mod(o4)>mod(a*v)+sett->size/3)) return {ort(n * dot(n, o3))};
     d = dat(n, o4);
-    if(!(abs(d)>size || mod(o4)>mod(b*n)+size/3 || mod(o1)>mod(b*n)+size/3)) return {ort(v * dot(v, o4))};
+    if(!(abs(d)>sett->size || mod(o4)>mod(b*n)+sett->size/3 || mod(o1)>mod(b*n)+sett->size/3)) return {ort(v * dot(v, o4))};
     return {};
 }
-float RectObj::intersect(sf::Vector2f rp, sf::Vector2f rv, float rl)
+float RectObj::intersect(sf::Vector2f rp, sf::Vector2f rv)
 {
-    float ox = rl;
+    float ox = sett->len;
     sf::Vector2f o=trans(pos, sf::Vector2f(pos.x-a/2, pos.y-b/2), al);
     sf::Vector2f v(std::cos(M_PI*al/180), std::sin(M_PI*al/180));
     sf::Vector2f n=norm(v);
     float pa = dot(n, rv);
     float h = dat(v, rp-o);
     sf::Vector2f x = rp + rv*abs(h/pa);
-    if(lin(o, trans(o, sf::Vector2f(o.x+a, o.y), al), x) && rl>=abs(h/pa)) {ox=std::min(ox, abs(h/pa));}
+    if(lin(o, trans(o, sf::Vector2f(o.x+a, o.y), al), x) && sett->len>=abs(h/pa)) {ox=std::min(ox, abs(h/pa));}
     pa = dot(v, rv);
     h = dat(n, rp-o);
     x = rp + rv*abs(h/pa);
-    if(lin(o, trans(o, sf::Vector2f(o.x, o.y+b), al), x) && rl>=abs(h/pa)) {ox=std::min(ox, abs(h/pa));}
+    if(lin(o, trans(o, sf::Vector2f(o.x, o.y+b), al), x) && sett->len>=abs(h/pa)) {ox=std::min(ox, abs(h/pa));}
     o=trans(pos, sf::Vector2f(pos.x+a/2, pos.y+b/2), al);
     pa = dot(n, rv);
     h = dat(v, rp-o);
     x = rp + rv*abs(h/pa);
-    if(lin(o, trans(o, sf::Vector2f(o.x-a, o.y), al), x) && rl>=abs(h/pa)) {ox=std::min(ox, abs(h/pa));}
+    if(lin(o, trans(o, sf::Vector2f(o.x-a, o.y), al), x) && sett->len>=abs(h/pa)) {ox=std::min(ox, abs(h/pa));}
     pa = dot(v, rv);
     h = dat(n, rp-o);
     x = rp + rv*abs(h/pa);
-    if(lin(o, trans(o, sf::Vector2f(o.x, o.y-b), al), x) && rl>=abs(h/pa)) {ox=std::min(ox, abs(h/pa));}
+    if(lin(o, trans(o, sf::Vector2f(o.x, o.y-b), al), x) && sett->len>=abs(h/pa)) {ox=std::min(ox, abs(h/pa));}
     return ox;
 }

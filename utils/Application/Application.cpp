@@ -28,18 +28,19 @@ void Screen::update(std::vector<float> dist)
     float h;
     for (int i = 0; i < kol; i++)
     {
-        h=(dal/(dist[i]+dal))*H;
+        h=H*30/dist[i];
         if(dist[i]>=599) h=0;
         vission[i].setSize(sf::Vector2f((float)W/kol, h));
         vission[i].setPosition(sf::Vector2f(i*(float)W/kol, (H-h)/2));
+        vission[i].setFillColor(sf::Color(250-100*dist[i]/dal, 0, 0));
     }
 }
 
 
 App::App(): 
     window(sf::VideoMode(W, H), "window", sf::Style::Default, settings), 
-    cam_pos(600, 700), center(W/2, H/2), discretization(180), dist(discretization),
-    camera(cam_pos, discretization, 600), screen(discretization), map(camera)
+    cam_pos(800, 700), center(W/2, H/2), dist(sett->discretization),
+    camera(cam_pos), screen(sett->discretization), map(camera)
 {
 	settings.antialiasingLevel = 8;
     window.setFramerateLimit(60);
