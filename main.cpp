@@ -2,7 +2,10 @@
 
 int main() 
 {
-	sf::ContextSettings settings;
+	const int W = 1200;
+	const int H = 800;
+	
+    sf::ContextSettings settings;
 	settings.antialiasingLevel = 8;
     sf::RenderWindow window(sf::VideoMode(W, H), "window", sf::Style::Default, settings);
     window.setFramerateLimit(60);
