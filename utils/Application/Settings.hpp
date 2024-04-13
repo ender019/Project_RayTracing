@@ -29,7 +29,7 @@ public:
     int W = 1200;
     int H = 800;
     int discretization = 180;
-    float len = 600.f;
+    float len = 900.f;
     float visual_al = 90.f;
     float size = 3.f;
     float scale = 1.f/6;

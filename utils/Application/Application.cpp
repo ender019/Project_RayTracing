@@ -23,16 +23,17 @@ Screen::Screen(int kol_):
     }
 }
     
-void Screen::update(std::vector<float> dist)
+void Screen::update(std::vector<Settings::vis_point> dist)
 {
-    float h;
+    float h, dc;
     for (int i = 0; i < kol; i++)
     {
-        h=H*30/dist[i];
-        if(dist[i]>=599) h=0;
+        h=H*30/dist[i].dist;
+        dc = 255-200*dist[i].dist/sett->len;
+        if(dist[i].dist>=sett->len-1) h=0;
         vission[i].setSize(sf::Vector2f((float)W/kol, h));
         vission[i].setPosition(sf::Vector2f(i*(float)W/kol, (H-h)/2));
-        vission[i].setFillColor(sf::Color(250-100*dist[i]/dal, 0, 0));
+        vission[i].setFillColor(dist[i].rgb*sf::Color(dc,dc,dc));
     }
 }
 

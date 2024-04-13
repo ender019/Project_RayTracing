@@ -13,7 +13,6 @@ private:
     float nal;
     float feeling = 2;
     int ray_kol;
-    float dist;
     float vis_al;
 
     friend class Map;
@@ -31,5 +30,5 @@ public:
 
     void rotate(float w);
     void move(std::vector<GeomObject*> objects, int p);
-    std::vector<float> tracing(std::vector<GeomObject*> objects);
+    std::vector<Settings::vis_point> tracing(std::vector<GeomObject*> objects);
 };
