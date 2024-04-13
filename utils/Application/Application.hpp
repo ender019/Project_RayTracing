@@ -22,14 +22,21 @@ public:
 class App
 {
 private:
+    sf::ContextSettings settings;
+    sf::RenderWindow window;
+    sf::Clock clock;
     sf::Vector2f cam_pos;
     sf::Vector2f center;
-    int discretization = 180;
+    int discretization;
     std::vector<float> dist;
-    int fps = 0;
-    float t = 0;
+    FPS counter;
+    Character camera;
+    std::vector<GeomObject*> objects;
+    Screen screen;
+    Map map;
     
 public:
     App();
+    void run();
     ~App();
 };
