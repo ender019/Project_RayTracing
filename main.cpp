@@ -1,4 +1,4 @@
-#include "utils/Interface/Interface.hpp"
+#include "Application.hpp"
 
 int main() 
 {
@@ -10,6 +10,8 @@ int main()
 
     sf::Vector2f cam_pos(600, 700);
     sf::Vector2f center(W/2, H/2);
+    int discretization = 180;
+    std::vector<float> dist(discretization);
     bool act = 1;
     int fps = 0;
     float t = 0;
@@ -23,7 +25,7 @@ int main()
 	fps_lable.setFillColor(sf::Color::Black);
 	fps_lable.setPosition(sf::Vector2f(W-35,8));
 
-    Character camera(cam_pos, 180, 600);
+    Character camera(cam_pos, discretization, 600);
     std::vector<GeomObject*> objects;
     objects.push_back(new SphearObj(sf::Vector2f(700,300), 30));
     objects.push_back(new SphearObj(sf::Vector2f(750,200), 50));
@@ -39,6 +41,8 @@ int main()
     objects.push_back(new BoxObj(sf::Vector2f(840,350), 120, 80));
     objects.push_back(new BoxObj(sf::Vector2f(560,350), 140, 40, 30));
     objects.push_back(new BoxObj(sf::Vector2f(600,400), 1180, 780));
+
+    Screen screen(discretization);
     Map map(objects, camera);
 
     while (window.isOpen())
@@ -57,10 +61,12 @@ int main()
         sf::Mouse::setPosition(sf::Vector2i(W/2, H/2), window);
         camera.rotate(dx.x*elapsed.asSeconds());
         window.clear(sf::Color::White);
-        camera.tracing(objects);
+
+        dist = camera.tracing(objects);
+        screen.update(dist);
         map.update(camera);
-        for (int i = 0; i < objects.size(); i++) {window.draw(*objects[i]);}
-        window.draw(camera);
+
+        window.draw(screen);
         window.draw(map);
         t+=elapsed.asSeconds(); fps++;
         if(t>=1){fps_lable.setString(std::to_string(fps)); fps=0; t=0;}

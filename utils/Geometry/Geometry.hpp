@@ -9,6 +9,7 @@ class GeomObject : public sf::Drawable, public sf::Transformable
 {
 protected:
     sf::Vector2f pos;
+    sf::Color rgb;
 
 protected: 
     float mod(sf::Vector2f pos);
@@ -21,7 +22,7 @@ protected:
 
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const = 0;
 public:
-    GeomObject(sf::Vector2f pos_);
+    GeomObject(sf::Vector2f pos_, sf::Color rgb_);
 
     virtual void scale(GeomObject*& c, float p) = 0;
     virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls, float size) = 0;

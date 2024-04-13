@@ -19,7 +19,7 @@ void Character::draw(sf::RenderTarget& target, sf::RenderStates states) const
     target.draw(conture, states);
 }
 
-Character::Character(sf::Vector2f pos_, float kol_, float dist_, float size_, float al_, float nal_): 
+Character::Character(sf::Vector2f pos_, int kol_, float dist_, float size_, float al_, float nal_): 
     camera(3.f), conture(sf::LineStrip, kol_+2), rays(kol_, sf::Vector2f(std::cos(M_PI*nal_/180), std::sin(M_PI*nal_/180))),
     pos(pos_), ray_kol(kol_), dist(dist_), size(size_), vis_al(al_), nal(nal_)
 {

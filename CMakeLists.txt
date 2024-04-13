@@ -11,6 +11,7 @@ set(SOURCE
     utils/Geometry/Geometry.cpp
     utils/Character/Character.cpp
     utils/Interface/Interface.cpp
+    utils/Application/Application.cpp
 	main.cpp
 )
 
@@ -18,6 +19,7 @@ set(HEADERS
     utils/Geometry/Geometry.hpp
     utils/Character/Character.hpp
     utils/Interface/Interface.hpp
+    utils/Application/Application.hpp
 )
 
 add_executable(${PROJECT_NAME} ${SOURCE} ${HEADERS})
@@ -25,6 +27,7 @@ add_executable(${PROJECT_NAME} ${SOURCE} ${HEADERS})
 target_include_directories(${PROJECT_NAME} PUBLIC utils/Geometry)
 target_include_directories(${PROJECT_NAME} PUBLIC utils/Character)
 target_include_directories(${PROJECT_NAME} PUBLIC utils/Interface)
+target_include_directories(${PROJECT_NAME} PUBLIC utils/Application)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/utils/Materials/times.ttf ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 

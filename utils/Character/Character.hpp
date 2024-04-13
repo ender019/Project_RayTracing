@@ -27,7 +27,7 @@ protected:
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
     
 public:
-    Character(sf::Vector2f pos_, float kol_, float dist_, float size_ = 3.f, float al_=90, float nal_=-90);
+    Character(sf::Vector2f pos_, int kol_, float dist_ = 600, float size_ = 3.f, float al_=90, float nal_=-90);
 
     void rotate(float w);
     void move(std::vector<GeomObject*> objects, int p);

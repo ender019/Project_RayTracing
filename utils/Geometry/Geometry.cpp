@@ -12,7 +12,7 @@ sf::Vector2f GeomObject::trans(sf::Vector2f o, sf::Vector2f a, float al)
     return sf::Vector2f(o.x+(a.x-o.x)*std::cos(al)-(a.y-o.y)*std::sin(al), o.y+(a.x-o.x)*std::sin(al)+(a.y-o.y)*std::cos(al));
 }
 
-GeomObject::GeomObject(sf::Vector2f pos_): pos(pos_){}
+GeomObject::GeomObject(sf::Vector2f pos_, sf::Color rgb_): pos(pos_), rgb(rgb_) {}
 
 
 void SphearObj::draw(sf::RenderTarget& target, sf::RenderStates states) const
@@ -26,10 +26,10 @@ void SphearObj::scale(GeomObject*& c, float p)
 {
     c = new SphearObj(p*pos, p*r);
 }
-SphearObj::SphearObj(sf::Vector2f pos_, float size): GeomObject(pos_), r(size), obj(size)
+SphearObj::SphearObj(sf::Vector2f pos_, float size): GeomObject(pos_, sf::Color::Blue), r(size), obj(size)
 {
     obj.move(sf::Vector2f(pos_.x-r, pos_.y-r));
-    obj.setFillColor(sf::Color::Blue);
+    obj.setFillColor(rgb);
 }
 std::vector<sf::Vector2f> SphearObj::collision(sf::Vector2f pls, float size)
 {
@@ -56,12 +56,17 @@ void LineObj::draw(sf::RenderTarget& target, sf::RenderStates states) const
     target.draw(obj, 2, sf::Lines, states);
 }
 
-LineObj::LineObj(sf::Vector2f pos_, float l, float al): GeomObject(pos_) 
-    {*this = LineObj(pos_.x, pos_.y, pos_.x + l*std::cos(M_PI*al/180), pos_.y + l*std::sin(M_PI*al/180));}
-LineObj::LineObj(float a1_, float b1_, float a2_, float b2_): GeomObject(sf::Vector2f(a1_, b1_)), a1(a1_), b1(b1_), a2(a2_), b2(b2_)
+LineObj::LineObj(float a1_, float b1_, float a2_, float b2_): 
+    GeomObject(sf::Vector2f(a1_, b1_), sf::Color(220,220,0)), 
+    a1(a1_), b1(b1_), a2(a2_), b2(b2_)
 {
-    obj[0] = sf::Vertex (sf::Vector2f(a1, b1), sf::Color(220,220,0));
-    obj[1] = sf::Vertex (sf::Vector2f(a2, b2), sf::Color(220,220,0));
+    obj[0] = sf::Vertex (sf::Vector2f(a1, b1), rgb);
+    obj[1] = sf::Vertex (sf::Vector2f(a2, b2), rgb);
+}
+LineObj::LineObj(sf::Vector2f pos_, float l, float al): 
+    GeomObject(pos_, sf::Color(220,220,0)) 
+{
+    *this = LineObj(pos_.x, pos_.y, pos_.x + l*std::cos(M_PI*al/180), pos_.y + l*std::sin(M_PI*al/180));
 }
 
 void LineObj::scale(GeomObject*& c, float p)
@@ -94,13 +99,13 @@ void BoxObj::draw(sf::RenderTarget& target, sf::RenderStates states) const
     states.texture = NULL;
     target.draw(obj, 5, sf::LinesStrip, states);
 }
-BoxObj::BoxObj(sf::Vector2f pos_, float a_, float b_, float al_): GeomObject(pos_), a(a_), b(b_), al(al_)
+BoxObj::BoxObj(sf::Vector2f pos_, float a_, float b_, float al_): GeomObject(pos_, sf::Color(0,220,220)), a(a_), b(b_), al(al_)
 {
-    obj[0] = sf::Vertex (trans(pos, sf::Vector2f(pos.x-a/2, pos.y-b/2), al), sf::Color(0,220,220));
-    obj[1] = sf::Vertex (trans(pos, sf::Vector2f(pos.x+a/2, pos.y-b/2), al), sf::Color(0,220,220));
-    obj[2] = sf::Vertex (trans(pos, sf::Vector2f(pos.x+a/2, pos.y+b/2), al), sf::Color(0,220,220));
-    obj[3] = sf::Vertex (trans(pos, sf::Vector2f(pos.x-a/2, pos.y+b/2), al), sf::Color(0,220,220));
-    obj[4] = sf::Vertex (trans(pos, sf::Vector2f(pos.x-a/2, pos.y-b/2), al), sf::Color(0,220,220));
+    obj[0] = sf::Vertex (trans(pos, sf::Vector2f(pos.x-a/2, pos.y-b/2), al), rgb);
+    obj[1] = sf::Vertex (trans(pos, sf::Vector2f(pos.x+a/2, pos.y-b/2), al), rgb);
+    obj[2] = sf::Vertex (trans(pos, sf::Vector2f(pos.x+a/2, pos.y+b/2), al), rgb);
+    obj[3] = sf::Vertex (trans(pos, sf::Vector2f(pos.x-a/2, pos.y+b/2), al), rgb);
+    obj[4] = sf::Vertex (trans(pos, sf::Vector2f(pos.x-a/2, pos.y-b/2), al), rgb);
 }
 
 void BoxObj::scale(GeomObject*& c, float p)
@@ -124,13 +129,13 @@ std::vector<sf::Vector2f> BoxObj::collision(sf::Vector2f pls, float size)
 }
 float BoxObj::intersect(sf::Vector2f rp, sf::Vector2f rv, float rl)
 {
-    float ox = rl;
+    float pa, h, ox = rl;
     sf::Vector2f o, x, v(std::cos(M_PI*al/180), std::sin(M_PI*al/180)), n=norm(v);
     for (int i = 0; i < 4; i++)
     {
         o=obj[i].position;
-        float pa = dot(n, rv);
-        float h = dat(v, rp-o);
+        pa = dot(n, rv);
+        h = dat(v, rp-o);
         x = rp + rv*abs(h/pa);
         if(lin(o, obj[i+1].position, x) && rl>=abs(h/pa)) {ox=std::min(ox, abs(h/pa));}
         std::swap(v, n);
@@ -146,11 +151,11 @@ void RectObj::draw(sf::RenderTarget& target, sf::RenderStates states) const
     target.draw(obj, states);
 }
 
-RectObj::RectObj(sf::Vector2f pos_, float a_, float b_, float al_): GeomObject(pos_), obj(sf::Vector2f(a_, b_)), a(a_), b(b_), al(al_)
+RectObj::RectObj(sf::Vector2f pos_, float a_, float b_, float al_): GeomObject(pos_, sf::Color::Blue), obj(sf::Vector2f(a_, b_)), a(a_), b(b_), al(al_)
 {
     obj.move(trans(pos, sf::Vector2f(pos.x-a/2, pos.y-b/2), al));
     obj.rotate(al);
-    obj.setFillColor(sf::Color::Blue);
+    obj.setFillColor(rgb);
 }
 
 void RectObj::scale(GeomObject*& c, float p)
