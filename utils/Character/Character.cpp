@@ -21,7 +21,7 @@ void Character::draw(sf::RenderTarget& target, sf::RenderStates states) const
 
 Character::Character(sf::Vector2f pos_, float nal_): 
     camera(3.f), conture(sf::LineStrip, sett->discretization+2), rays(sett->discretization, sf::Vector2f(std::cos(M_PI*nal_/180), std::sin(M_PI*nal_/180))),
-    pos(pos_), ray_kol(sett->discretization), size(sett->size), vis_al(sett->visual_al), nal(nal_)
+    pos(pos_), ray_kol(sett->discretization), size(sett->size), vis_al(sett->visual_al), nal(sf::Vector2f(std::cos(M_PI*nal_/180), std::sin(M_PI*nal_/180)))
 {
     camera.setFillColor(sf::Color::Black);
     camera.move(pos-sf::Vector2f(size, size)); 
@@ -34,16 +34,16 @@ Character::Character(sf::Vector2f pos_, float nal_):
 
 void Character::rotate(float w)
 {
-    nal+=w*feeling;
+    rot(nal, w*feeling);
     for (int i = 0; i < ray_kol; i++){rot(rays[i], w*feeling);}
 }
-void Character::move(std::vector<GeomObject*> objects, int p)
+void Character::move(std::vector<GeomObject*> objects, float p)
 {
-    sf::Vector2f vec((2*(p%2)-1)*(p>1), (2*(p%2)-1)*(p<2));
+    sf::Vector2f vec = nal;
     sf::Vector2f d_v=sf::Vector2f(0, 0);
     std::vector<sf::Vector2f> n;
     bool fl=0, fr=0;
-    rot(vec, nal);
+    rot(vec, p);
     sf::Vector2f l=vec, r=vec;
     for (int i = 0; i < objects.size(); i++)
     {

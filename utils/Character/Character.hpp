@@ -9,8 +9,8 @@ private:
     std::vector<sf::Vector2f> rays;
     sf::VertexArray conture;
     sf::Vector2f pos;
+    sf::Vector2f nal;
     float size;
-    float nal;
     float feeling = 2;
     int ray_kol;
     float vis_al;
@@ -29,6 +29,6 @@ public:
     Character(sf::Vector2f pos_, float nal_=-90);
 
     void rotate(float w);
-    void move(std::vector<GeomObject*> objects, int p);
+    void move(std::vector<GeomObject*> objects, float p);
     std::vector<Settings::vis_point> tracing(std::vector<GeomObject*> objects);
 };

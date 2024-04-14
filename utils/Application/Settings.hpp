@@ -28,9 +28,10 @@ public:
 
     int W = 1200;
     int H = 800;
-    int discretization = 180;
-    float len = 900.f;
-    float visual_al = 90.f;
+    int discretization = 360;
+    float rast =30.f;
+    float len = 1500.f;
+    float visual_al = 60.f;
     float size = 3.f;
     float scale = 1.f/6;
     

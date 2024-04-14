@@ -45,7 +45,9 @@ Settings::vis_point SphearObj::intersect(sf::Vector2f rp, sf::Vector2f rv)
     float bh = r*r - ao + ah*ah;
     if(bh < 0 || ah<0) return {sett->len, rgb};
     float h = sqrt(bh);
-    return {std::min(ah - h, sett->len), rgb};
+    float dc = 100+155*abs(dot(ort(h*rv-aov), rv));
+    // std::cout<<dot(ort(h*rv-aov), rv)<<'\n';
+    return {std::min(ah - h, sett->len), rgb*sf::Color(dc,dc,dc)};
 }
 
 
@@ -88,7 +90,11 @@ Settings::vis_point LineObj::intersect(sf::Vector2f rp, sf::Vector2f rv)
     float pa = dot(n, rv);
     float h = dat(v, rp-pos);
     sf::Vector2f x = rp + rv*abs(h/pa);
-    if(lin(sf::Vector2f(a1, b1), sf::Vector2f(a2, b2), x) && sett->len>=abs(h/pa)) {return {abs(h/pa), rgb};}
+    if(lin(sf::Vector2f(a1, b1), sf::Vector2f(a2, b2), x) && sett->len>=abs(h/pa))
+    {
+        float dc = 155+100*abs(pa); 
+        return {abs(h/pa), rgb*sf::Color(dc,dc,dc)};
+    }
     return {sett->len, rgb};
 }
 
@@ -129,7 +135,7 @@ std::vector<sf::Vector2f> BoxObj::collision(sf::Vector2f pls)
 }
 Settings::vis_point BoxObj::intersect(sf::Vector2f rp, sf::Vector2f rv)
 {
-    float pa, h;
+    float pa, h, dc;
     Settings::vis_point ox{sett->len, rgb}; 
     sf::Vector2f o, x, v(std::cos(M_PI*al/180), std::sin(M_PI*al/180)), n=norm(v);
     for (int i = 0; i < 4; i++)
@@ -138,7 +144,7 @@ Settings::vis_point BoxObj::intersect(sf::Vector2f rp, sf::Vector2f rv)
         pa = dot(n, rv);
         h = dat(v, rp-o);
         x = rp + rv*abs(h/pa);
-        if(lin(o, obj[i+1].position, x) && sett->len>=abs(h/pa)) {ox.dist=std::min(ox.dist, abs(h/pa));}
+        if(lin(o, obj[i+1].position, x) && sett->len>=abs(h/pa) && ox.dist>abs(h/pa)) {dc = 155+100*abs(pa); ox={abs(h/pa), rgb*sf::Color(dc,dc,dc)};}
         std::swap(v, n);
     }
     return ox;
@@ -187,22 +193,23 @@ Settings::vis_point RectObj::intersect(sf::Vector2f rp, sf::Vector2f rv)
     sf::Vector2f o=trans(pos, sf::Vector2f(pos.x-a/2, pos.y-b/2), al);
     sf::Vector2f v(std::cos(M_PI*al/180), std::sin(M_PI*al/180));
     sf::Vector2f n=norm(v);
+    float dc;
     float pa = dot(n, rv);
     float h = dat(v, rp-o);
     sf::Vector2f x = rp + rv*abs(h/pa);
-    if(lin(o, trans(o, sf::Vector2f(o.x+a, o.y), al), x) && sett->len>=abs(h/pa)) {ox.dist=std::min(ox.dist, abs(h/pa));}
+    if(lin(o, trans(o, sf::Vector2f(o.x+a, o.y), al), x) && sett->len>=abs(h/pa) && ox.dist>abs(h/pa)) {dc = 155+100*abs(pa); ox={abs(h/pa), rgb*sf::Color(dc,dc,dc)};}
     pa = dot(v, rv);
     h = dat(n, rp-o);
     x = rp + rv*abs(h/pa);
-    if(lin(o, trans(o, sf::Vector2f(o.x, o.y+b), al), x) && sett->len>=abs(h/pa)) {ox.dist=std::min(ox.dist, abs(h/pa));}
+    if(lin(o, trans(o, sf::Vector2f(o.x, o.y+b), al), x) && sett->len>=abs(h/pa) && ox.dist>abs(h/pa)) {dc = 155+100*abs(pa); ox={abs(h/pa), rgb*sf::Color(dc,dc,dc)};}
     o=trans(pos, sf::Vector2f(pos.x+a/2, pos.y+b/2), al);
     pa = dot(n, rv);
     h = dat(v, rp-o);
     x = rp + rv*abs(h/pa);
-    if(lin(o, trans(o, sf::Vector2f(o.x-a, o.y), al), x) && sett->len>=abs(h/pa)) {ox.dist=std::min(ox.dist, abs(h/pa));}
+    if(lin(o, trans(o, sf::Vector2f(o.x-a, o.y), al), x) && sett->len>=abs(h/pa) && ox.dist>abs(h/pa)) {dc = 155+100*abs(pa); ox={abs(h/pa), rgb*sf::Color(dc,dc,dc)};}
     pa = dot(v, rv);
     h = dat(n, rp-o);
     x = rp + rv*abs(h/pa);
-    if(lin(o, trans(o, sf::Vector2f(o.x, o.y-b), al), x) && sett->len>=abs(h/pa)) {ox.dist=std::min(ox.dist, abs(h/pa));}
+    if(lin(o, trans(o, sf::Vector2f(o.x, o.y-b), al), x) && sett->len>=abs(h/pa) && ox.dist>abs(h/pa)) {dc = 155+100*abs(pa); ox={abs(h/pa), rgb*sf::Color(dc,dc,dc)};}
     return ox;
 }

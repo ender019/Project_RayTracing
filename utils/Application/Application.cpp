@@ -28,9 +28,12 @@ void Screen::update(std::vector<Settings::vis_point> dist)
     float h, dc;
     for (int i = 0; i < kol; i++)
     {
-        h=H*30/dist[i].dist;
-        dc = 255-200*dist[i].dist/sett->len;
         if(dist[i].dist>=sett->len-1) h=0;
+        else{
+            dist[i].dist*=cos(M_PI*sett->visual_al/180*((float)kol/2-i)/kol);
+            h=H*sett->rast/dist[i].dist;
+            dc = 255-100*dist[i].dist/sett->len;
+        }
         vission[i].setSize(sf::Vector2f((float)W/kol, h));
         vission[i].setPosition(sf::Vector2f(i*(float)W/kol, (H-h)/2));
         vission[i].setFillColor(dist[i].rgb*sf::Color(dc,dc,dc));
@@ -73,10 +76,10 @@ void App::run()
         }
         sf::Time elapsed = clock.restart();
         sf::Vector2f dx = window.mapPixelToCoords(sf::Mouse::getPosition(window)) - center;
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::W)){camera.move(objects, 3);}
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::S)){camera.move(objects, 2);}
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::D)){camera.move(objects, 1);}
-        if(sf::Keyboard::isKeyPressed(sf::Keyboard::A)){camera.move(objects, 0);}
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::W)){camera.move(objects, 0);}
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::S)){camera.move(objects, 180);}
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::A)){camera.move(objects, -90);}
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::D)){camera.move(objects, 90);}
         sf::Mouse::setPosition(sf::Vector2i(W/2, H/2), window);
         camera.rotate(dx.x*elapsed.asSeconds());
         window.clear(sf::Color::White);
