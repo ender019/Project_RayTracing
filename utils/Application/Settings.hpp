@@ -5,8 +5,6 @@
 #include <vector>
 #include <SFML/Graphics.hpp>
 
-// typedef Settings::get() sett
-
 class Settings
 {
     Settings();
@@ -18,17 +16,9 @@ public:
         sf::Color rgb;
     };
 
-    // float mod(sf::Vector2f pos);
-    // sf::Vector2f ort(sf::Vector2f pos);
-    // sf::Vector2f norm(sf::Vector2f pos);
-    // float dot(sf::Vector2f a, sf::Vector2f b);
-    // float dat(sf::Vector2f a, sf::Vector2f b);
-    // bool lin(sf::Vector2f a, sf::Vector2f b, sf::Vector2f x);
-    // sf::Vector2f trans(sf::Vector2f o, sf::Vector2f a, float al);
-
     int W = 1200;
     int H = 800;
-    int discretization = 360;
+    int discretization = 1800;
     float rast =30.f;
     float len = 1500.f;
     float visual_al = 60.f;

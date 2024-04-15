@@ -15,29 +15,29 @@ sf::Vector2f GeomObject::trans(sf::Vector2f o, sf::Vector2f a, float al)
 GeomObject::GeomObject(sf::Vector2f pos_, sf::Color rgb_): pos(pos_), rgb(rgb_) {}
 
 
-void SphearObj::draw(sf::RenderTarget& target, sf::RenderStates states) const
+void CircleObj::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     states.transform *= getTransform();
     states.texture = NULL;
     target.draw(obj, states);
 }
 
-void SphearObj::scale(GeomObject*& c)
+void CircleObj::scale(GeomObject*& c)
 {
-    c = new SphearObj(sett->scale*pos, sett->scale*r);
+    c = new CircleObj(sett->scale*pos, sett->scale*r);
 }
-SphearObj::SphearObj(sf::Vector2f pos_, float r_): GeomObject(pos_, sf::Color::Blue), r(r_), obj(r_)
+CircleObj::CircleObj(sf::Vector2f pos_, float r_): GeomObject(pos_, sf::Color::Blue), r(r_), obj(r_)
 {
     obj.move(sf::Vector2f(pos_.x-r, pos_.y-r));
     obj.setFillColor(rgb);
 }
-std::vector<sf::Vector2f> SphearObj::collision(sf::Vector2f pls)
+std::vector<sf::Vector2f> CircleObj::collision(sf::Vector2f pls)
 {
     float d = mod(pls-pos) - r;
     if(d>sett->size) return {};
     return {ort(pls-pos)};
 }
-Settings::vis_point SphearObj::intersect(sf::Vector2f rp, sf::Vector2f rv)
+Settings::vis_point CircleObj::intersect(sf::Vector2f rp, sf::Vector2f rv)
 {
     sf::Vector2f aov=pos-rp;
     float ah = dot(aov, rv);

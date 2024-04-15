@@ -26,7 +26,7 @@ public:
     virtual Settings::vis_point intersect(sf::Vector2f rp, sf::Vector2f rv) = 0;
 };
 
-class SphearObj : public GeomObject
+class CircleObj : public GeomObject
 {
 protected:
     sf::CircleShape obj;
@@ -34,7 +34,7 @@ protected:
 protected: 
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 public:
-    SphearObj(sf::Vector2f pos_, float r_);
+    CircleObj(sf::Vector2f pos_, float r_);
 
     virtual void scale(GeomObject*& c);
     virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls);

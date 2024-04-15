@@ -25,7 +25,6 @@ private:
     sf::RenderWindow window;
     sf::Clock clock;
     sf::Vector2f cam_pos;
-    sf::Vector2f center;
     std::vector<Settings::vis_point> dist;
     FPS counter;
     Character camera;

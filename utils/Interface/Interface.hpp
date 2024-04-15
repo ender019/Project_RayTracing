@@ -2,9 +2,6 @@
 
 #include "Character.hpp"
 
-const int W = 1200;
-const int H = 800;
-
 class Map : public sf::Drawable, public sf::Transformable
 {
 private:

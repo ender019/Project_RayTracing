@@ -11,7 +11,7 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
 }
 
 Map::Map(Character player_, float p): 
-    back(sf::Vector2f(p*W, p*H)),
+    back(sf::Vector2f(p*sett->W, p*sett->H)),
     conture(sf::LineStrip, player_.ray_kol+2), camera(p*player_.size), kol(player_.ray_kol+2), part(p)
 {
     back.setOutlineThickness(3);
@@ -59,7 +59,7 @@ FPS::FPS()
     fps_lable.setString("0");
     fps_lable.setCharacterSize(20); 
 	fps_lable.setFillColor(sf::Color::Black);
-	fps_lable.setPosition(sf::Vector2f(W-35,8));
+	fps_lable.setPosition(sf::Vector2f(sett->W-35,8));
 }
 
 void FPS::update(float dt)
