@@ -38,3 +38,4 @@ set(SFML_DIR "C:\\Users\\kiril\\Desktop\\C++\\SFML-2.6.1\\lib\\cmake\\SFML")
 target_link_libraries(${project} sfml-system sfml-graphics sfml-audio)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake_modules")
 find_package(SFML 2.5 COMPONENTS graphics network audio window system REQUIRED)
+
