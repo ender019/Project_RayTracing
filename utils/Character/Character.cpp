@@ -19,12 +19,12 @@ void Character::draw(sf::RenderTarget& target, sf::RenderStates states) const
     target.draw(conture, states);
 }
 
-Character::Character(sf::Vector2f pos_, float kol_, float dist_, float al_, float nal_): 
-    camera(3.f), conture(sf::LineStrip, kol_+2), rays(kol_, sf::Vector2f(std::cos(M_PI*nal_/180), std::sin(M_PI*nal_/180))),
-    pos(pos_), ray_kol(kol_), dist(dist_), vis_al(al_), nal(nal_)
+Character::Character(sf::Vector2f pos_, float nal_): 
+    camera(3.f), conture(sf::LineStrip, sett->discretization+2), rays(sett->discretization, sf::Vector2f(std::cos(M_PI*nal_/180), std::sin(M_PI*nal_/180))),
+    pos(pos_), ray_kol(sett->discretization), size(sett->size), vis_al(sett->visual_al), nal(sf::Vector2f(std::cos(M_PI*nal_/180), std::sin(M_PI*nal_/180)))
 {
     camera.setFillColor(sf::Color::Black);
-    camera.move(pos-sf::Vector2f(3, 3)); 
+    camera.move(pos-sf::Vector2f(size, size)); 
     conture[0].color = sf::Color::Red;
     conture[ray_kol+1].color = sf::Color::Red;
     conture[0].position = pos;
@@ -34,16 +34,16 @@ Character::Character(sf::Vector2f pos_, float kol_, float dist_, float al_, floa
 
 void Character::rotate(float w)
 {
-    nal+=w*feeling;
+    rot(nal, w*feeling);
     for (int i = 0; i < ray_kol; i++){rot(rays[i], w*feeling);}
 }
-void Character::move(std::vector<GeomObject*> objects, int p)
+void Character::move(std::vector<GeomObject*> objects, float p)
 {
-    sf::Vector2f vec((2*(p%2)-1)*(p>1), (2*(p%2)-1)*(p<2));
+    sf::Vector2f vec = nal;
     sf::Vector2f d_v=sf::Vector2f(0, 0);
     std::vector<sf::Vector2f> n;
     bool fl=0, fr=0;
-    rot(vec, nal);
+    rot(vec, p);
     sf::Vector2f l=vec, r=vec;
     for (int i = 0; i < objects.size(); i++)
     {
@@ -62,18 +62,19 @@ void Character::move(std::vector<GeomObject*> objects, int p)
     conture[0].position=pos;
     conture[ray_kol+1].position=pos;
 }
-std::vector<float> Character::tracing(std::vector<GeomObject*> objects)
+std::vector<Settings::vis_point> Character::tracing(std::vector<GeomObject*> objects)
 {
-    std::vector<float> mat(ray_kol, dist);
+    std::vector<Settings::vis_point> mat(ray_kol, {sett->len, sf::Color::Blue});
+    Settings::vis_point ox; 
     for (int i = 0; i < ray_kol; i++)
     {
         for (int j = 0; j < objects.size(); j++)
         {
-            float ox = objects[j]->intersect(pos, rays[i], dist);
-            mat[i] = std::min(ox, mat[i]);
+            ox = objects[j]->intersect(pos, rays[i]);
+            if(ox.dist < mat[i].dist) mat[i] = ox;
         }
         conture[i+1].color = sf::Color::Red;
-        conture[i+1].position = pos + mat[i]*rays[i];
+        conture[i+1].position = pos + mat[i].dist*rays[i];
     }
     return mat;
 }

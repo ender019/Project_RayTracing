@@ -1,12 +1,12 @@
-#include <iostream>
-#include <math.h>
-#include <vector>
-#include <SFML/Graphics.hpp>
+#pragma once
+
+#include "Settings.hpp"
 
 class GeomObject : public sf::Drawable, public sf::Transformable
 {
 protected:
     sf::Vector2f pos;
+    sf::Color rgb;
 
 protected: 
     float mod(sf::Vector2f pos);
@@ -19,13 +19,14 @@ protected:
 
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const = 0;
 public:
-    GeomObject(sf::Vector2f pos_);
+    GeomObject(sf::Vector2f pos_, sf::Color rgb_);
 
+    virtual void scale(GeomObject*& c) = 0;
     virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls) = 0;
-    virtual float intersect(sf::Vector2f rp, sf::Vector2f rv, float rl) = 0;
+    virtual Settings::vis_point intersect(sf::Vector2f rp, sf::Vector2f rv) = 0;
 };
 
-class SphearObj : public GeomObject
+class CircleObj : public GeomObject
 {
 protected:
     sf::CircleShape obj;
@@ -33,10 +34,11 @@ protected:
 protected: 
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 public:
-    SphearObj(sf::Vector2f pos_, float size);
+    CircleObj(sf::Vector2f pos_, float r_);
 
+    virtual void scale(GeomObject*& c);
     virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls);
-    virtual float intersect(sf::Vector2f rp, sf::Vector2f rv, float rl);
+    virtual Settings::vis_point intersect(sf::Vector2f rp, sf::Vector2f rv);
 };
 
 class LineObj : public GeomObject
@@ -51,8 +53,9 @@ public:
     LineObj(sf::Vector2f pos_, float l, float al = 0);
     LineObj(float a1_, float b1_, float a2_, float b2_);
 
+    virtual void scale(GeomObject*& c);
     virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls);
-    virtual float intersect(sf::Vector2f rp, sf::Vector2f rv, float rl);
+    virtual Settings::vis_point intersect(sf::Vector2f rp, sf::Vector2f rv);
 };
 
 class BoxObj : public GeomObject
@@ -67,8 +70,9 @@ protected:
 public:
     BoxObj(sf::Vector2f pos_, float a_, float b_, float al_=0);
 
+    virtual void scale(GeomObject*& c);
     virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls);
-    virtual float intersect(sf::Vector2f rp, sf::Vector2f rv, float rl);
+    virtual Settings::vis_point intersect(sf::Vector2f rp, sf::Vector2f rv);
 };
 
 class RectObj : public GeomObject
@@ -83,6 +87,7 @@ protected:
 public:
     RectObj(sf::Vector2f pos_, float a_, float b_, float al_=0);
 
+    virtual void scale(GeomObject*& c);
     virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls);
-    virtual float intersect(sf::Vector2f rp, sf::Vector2f rv, float rl);
+    virtual Settings::vis_point intersect(sf::Vector2f rp, sf::Vector2f rv);
 };
