@@ -5,14 +5,14 @@
 class Screen : public sf::Drawable, public sf::Transformable
 {
 private:
-    sf::RectangleShape floor;
-    sf::RectangleShape sky;
-    std::vector<sf::RectangleShape> vission;
-    int kol;
+    std::vector<sf::Uint8> vission;
+    sf::Texture tex;
+    sf::Sprite obj;
+    sf::Vector2i kol;
 private:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 public:
-    Screen(int kol_);
+    Screen();
 
     void update(std::vector<Settings::vis_point> dist);
 };
@@ -24,7 +24,7 @@ private:
     sf::ContextSettings settings;
     sf::RenderWindow window;
     sf::Clock clock;
-    sf::Vector2f cam_pos;
+    sf::Vector3f cam_pos;
     std::vector<Settings::vis_point> dist;
     FPS counter;
     Character camera;

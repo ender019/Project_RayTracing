@@ -5,6 +5,8 @@
 #include <vector>
 #include <SFML/Graphics.hpp>
 
+#define SET Settings
+
 class Settings
 {
     Settings();
@@ -16,14 +18,25 @@ public:
         sf::Color rgb;
     };
 
+    float mod(sf::Vector3f pos);
+    sf::Vector3f ort(sf::Vector3f pos);
+    sf::Vector3f norm(sf::Vector3f pos);
+    float dot(sf::Vector3f a, sf::Vector3f b);
+    sf::Vector3f dat(sf::Vector3f a, sf::Vector3f b);
+    bool lin(sf::Vector3f a, sf::Vector3f b, sf::Vector3f x);
+    bool inal(sf::Vector3f a, sf::Vector3f b, sf::Vector3f x);
+    void rot(sf::Vector3f& a, sf::Vector3f al);
+    sf::Vector3f trans(sf::Vector3f al, sf::Vector3f a={1,0,0}, sf::Vector3f o={0, 0, 0});
+
     int W = 1200;
     int H = 800;
-    int discretization = 1800;
+    sf::Vector2i discr = {1200, 800};
     float rast =30.f;
     float len = 1500.f;
-    float visual_al = 60.f;
+    sf::Vector2f vis = {60.f, 40.f};
     float size = 3.f;
-    float scale = 1.f/6;
+    float scale = 1.f/6.f;
+    sf::Vector3f light = {1, 1, -1};
     
     Settings(Settings const&) = delete;
     Settings& operator=(Settings const&) = delete;

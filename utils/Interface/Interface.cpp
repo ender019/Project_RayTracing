@@ -10,18 +10,18 @@ void Map::draw(sf::RenderTarget& target, sf::RenderStates states) const
     target.draw(conture, states);
 }
 
-Map::Map(Character player_, float p): 
+Map::Map(Character _player, float p): 
     back(sf::Vector2f(p*sett->W, p*sett->H)),
-    conture(sf::LineStrip, player_.ray_kol+2), camera(p*player_.size), kol(player_.ray_kol+2), part(p)
+    conture(sf::LineStrip, _player.ray_kol.x+2), camera(p*_player.size), kol(_player.ray_kol.x+2), part(p)
 {
     back.setOutlineThickness(3);
     back.setOutlineColor(sf::Color::Black);
     camera.setFillColor(sf::Color::Black);
-    camera.move(p*player_.pos);
+    camera.move(p*sf::Vector2f(_player.pos.x, _player.pos.y));
     for (int i = 0; i < kol; i++)
     {
-        conture[i] = player_.conture[i];
-        conture[i].position = p*player_.conture[i].position;
+        conture[i].position = p*_player.conture[i].position;
+        conture[i].color = sf::Color::Red;
     }
 }
 
@@ -37,8 +37,7 @@ void Map::reload(std::vector<GeomObject*> objects_)
 
 void Map::update(Character player)
 {
-    camera.setPosition(part * player.pos);
-    conture = player.conture;
+    camera.setPosition(part * sf::Vector2f(player.pos.x, player.pos.y));
     for (int i = 0; i < kol; i++){conture[i].position = part*player.conture[i].position;}
 }
 

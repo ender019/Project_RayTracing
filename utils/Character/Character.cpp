@@ -1,16 +1,5 @@
 #include "Character.hpp"
 
-float Character::mod(sf::Vector2f pos){return std::sqrt(pos.x*pos.x + pos.y*pos.y);}
-float Character::dot(sf::Vector2f a, sf::Vector2f b){return a.x*b.x + a.y*b.y;}
-float Character::dat(sf::Vector2f a, sf::Vector2f b) {return a.x*b.y - a.y*b.x;}
-void Character::rot(sf::Vector2f& a, float al)
-{
-    al = M_PI*al/180;
-    float x = a.x*std::cos(al)-a.y*std::sin(al);
-    float y = a.x*std::sin(al)+a.y*std::cos(al);
-    a.x = x; a.y = y;
-}
-
 void Character::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     states.transform *= getTransform();
@@ -19,62 +8,73 @@ void Character::draw(sf::RenderTarget& target, sf::RenderStates states) const
     target.draw(conture, states);
 }
 
-Character::Character(sf::Vector2f pos_, float nal_): 
-    camera(3.f), conture(sf::LineStrip, sett->discretization+2), rays(sett->discretization, sf::Vector2f(std::cos(M_PI*nal_/180), std::sin(M_PI*nal_/180))),
-    pos(pos_), ray_kol(sett->discretization), size(sett->size), vis_al(sett->visual_al), nal(sf::Vector2f(std::cos(M_PI*nal_/180), std::sin(M_PI*nal_/180)))
+Character::Character(sf::Vector3f _pos, sf::Vector3f _nal): 
+    camera(3.f), conture(sf::LineStrip, sett->discr.x+2), rays(sett->discr.y, std::vector<sf::Vector3f>(sett->discr.x, sett->trans(_nal))),
+    pos(_pos), ray_kol(sett->discr), size(sett->size), nal(_nal)
 {
     camera.setFillColor(sf::Color::Black);
-    camera.move(pos-sf::Vector2f(size, size)); 
-    conture[0].color = sf::Color::Red;
-    conture[ray_kol+1].color = sf::Color::Red;
-    conture[0].position = pos;
-    conture[ray_kol+1].position = pos;
-    for (int i = 0; i < ray_kol; i++){rot(rays[i], vis_al*i/ray_kol-vis_al/2);}
+    camera.move(sf::Vector2f(pos.x, pos.y)-sf::Vector2f(size, size)); 
+    conture[0].position = sf::Vector2f(pos.x, pos.y);
+    conture[ray_kol.x+1].position = sf::Vector2f(pos.x, pos.y);
+    for (int i = 0; i < ray_kol.y; i++){
+        for (int j = 0; j < ray_kol.x; j++) {sett->rot(rays[i][j], {0, sett->vis.y*((float)i/ray_kol.y-0.5f), sett->vis.x*((float)j/ray_kol.x-0.5f)});}
+    }
+    // std::cout<<rays[399][599].x<<' '<<rays[399][599].y<<' '<<rays[399][599].z<<' '<<'\n';
+    // std::cout<<rays[399][0].x<<' '<<rays[399][0].y<<' '<<rays[399][0].z<<' '<<'\n';
+    // std::cout<<rays[399][1199].x<<' '<<rays[399][1199].y<<' '<<rays[399][1199].z<<' '<<'\n';
+    // std::cout<<rays[0][599].x<<' '<<rays[0][599].y<<' '<<rays[0][599].z<<' '<<'\n';
+    // std::cout<<rays[799][599].x<<' '<<rays[799][599].y<<' '<<rays[799][599].z<<' '<<'\n';
 }
 
-void Character::rotate(float w)
+void Character::rotate(sf::Vector3f w)
 {
-    rot(nal, w*feeling);
-    for (int i = 0; i < ray_kol; i++){rot(rays[i], w*feeling);}
-}
-void Character::move(std::vector<GeomObject*> objects, float p)
-{
-    sf::Vector2f vec = nal;
-    sf::Vector2f d_v=sf::Vector2f(0, 0);
-    std::vector<sf::Vector2f> n;
-    bool fl=0, fr=0;
-    rot(vec, p);
-    sf::Vector2f l=vec, r=vec;
-    for (int i = 0; i < objects.size(); i++)
+    sett->rot(nal, w*feeling);
+    for (int i = 0; i < ray_kol.y; i++)
     {
-        n = objects[i]->collision(pos);
-        for (int j = 0; j < n.size(); j++)
-        {
-            if(dot(vec, n[j])<dot(vec, r) && dat(vec, n[j])>0) {r = n[j];}
-            if(dot(vec, n[j])<dot(vec, l) && dat(vec, n[j])<0) {l = n[j];}
-        }
+        for (int j = 0; j < ray_kol.x; j++){sett->rot(rays[i][j], w*feeling);}
     }
-    if(dot(-vec, r+l) > abs(dot(l, r+l))) {d_v = vec;}
-    else if(dot(vec, r)<0) {d_v = dot(vec, r)*r;}
-    else if(dot(vec, l)<0) {d_v = dot(vec, l)*l;}
+}
+void Character::move(std::vector<GeomObject*> objects, sf::Vector3f p)
+{
+    sf::Vector3f vec = nal;
+    sf::Vector3f d_v = {0, 0, 0};
+    std::vector<sf::Vector3f> n;
+    sett->rot(vec, p);
+    // sf::Vector3f l=vec, r=vec;
+    // for (int i = 0; i < objects.size(); i++)
+    // {
+    //     n = objects[i]->collision(pos);
+    //     for (int j = 0; j < n.size(); j++)
+    //     {
+    //         if(sett->dot(vec, n[j])<sett->dot(vec, r) && sett->dat(vec, n[j])>0) {r = n[j];}
+    //         if(sett->dot(vec, n[j])<sett->dot(vec, l) && sett->dat(vec, n[j])<0) {l = n[j];}
+    //     }
+    // }
+    // if(sett->dot(-vec, r+l) > abs(sett->dot(l, r+l))) {d_v = vec;}
+    // else if(sett->dot(vec, r)<0) {d_v = sett->dot(vec, r)*r;}
+    // else if(sett->dot(vec, l)<0) {d_v = sett->dot(vec, l)*l;}
     vec -= d_v; pos+=vec;
-    camera.move(vec);
-    conture[0].position=pos;
-    conture[ray_kol+1].position=pos;
+    camera.move(sf::Vector2f(vec.x, vec.y));
+    conture[0].position=sf::Vector2f(pos.x, pos.y);
+    conture[ray_kol.x+1].position=sf::Vector2f(pos.x, pos.y);
 }
 std::vector<Settings::vis_point> Character::tracing(std::vector<GeomObject*> objects)
 {
-    std::vector<Settings::vis_point> mat(ray_kol, {sett->len, sf::Color::Blue});
+    std::vector<Settings::vis_point> mat(ray_kol.x*ray_kol.y, {sett->len, sf::Color::White});
     Settings::vis_point ox; 
-    for (int i = 0; i < ray_kol; i++)
+    for (int i = 0; i < ray_kol.y; i++)
     {
-        for (int j = 0; j < objects.size(); j++)
+        for (int j = 0; j < ray_kol.x; j++)
         {
-            ox = objects[j]->intersect(pos, rays[i]);
-            if(ox.dist < mat[i].dist) mat[i] = ox;
+            for (int g = 0; g < objects.size(); g++)
+            {
+                ox = objects[g]->intersect(pos, rays[i][j]);
+                if(ox.dist < mat[i*ray_kol.x+j].dist) mat[i*ray_kol.x+j] = ox;
+            }
+            if(i==399){
+                conture[j+1].position = sf::Vector2f(pos.x, pos.y) + mat[i*ray_kol.x+j].dist*sf::Vector2f(rays[i][j].x, rays[i][j].y);
+            }
         }
-        conture[i+1].color = sf::Color::Red;
-        conture[i+1].position = pos + mat[i].dist*rays[i];
     }
     return mat;
 }
