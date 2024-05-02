@@ -11,7 +11,7 @@ private:
     sf::Vector3f pos;
     sf::Vector3f nal;
     float size;
-    float feeling = 2;
+    float feeling = 1.5;
     sf::Vector2i ray_kol;
 
     friend class Map;

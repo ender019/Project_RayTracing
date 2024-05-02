@@ -169,40 +169,17 @@ std::vector<sf::Vector3f> RectObj::collision(sf::Vector3f pls)
 SET::vis_point RectObj::intersect(sf::Vector3f rp, sf::Vector3f rv)
 {
     SET::vis_point ox{sett->len, rgb}; 
-    sf::Vector3f o=sett->trans(al, pos-0.5f*s, pos);
-    sf::Vector3f av=sett->trans(al, {s.x, 0, 0}), bv=sett->trans(al, {0, s.y, 0}), cv=sett->trans(al, {0, 0, s.z});
-
-    float dc;
-    sf::Vector3f n = sett->ort(sett->dat(av, bv));
-    float pa = abs(sett->dot(n, rv));
-    float h = abs(sett->dot(n, rp-o))/pa;
-    sf::Vector3f x = rp + rv*h;
-    if(sett->inal(av,bv,x-o) && sett->inal(av,bv,o+av+bv-x) && ox.dist>h) {dc = 155+100*abs(sett->dot(n, sett->light)); ox={h, rgb*sf::Color(dc,dc,dc)};}
-    n = sett->ort(sett->dat(bv, cv));
-    pa = abs(sett->dot(n, rv));
-    h = abs(sett->dot(n, rp-o))/pa;
-    x = rp + rv*h;
-    if(sett->inal(bv,cv,x-o) && sett->inal(bv,cv,o+bv+cv-x) && ox.dist>h) {dc = 155+100*abs(sett->dot(n, sett->light)); ox={h, rgb*sf::Color(dc,dc,dc)};}
-    n = sett->ort(sett->dat(av, cv));
-    pa = abs(sett->dot(n, rv));
-    h = abs(sett->dot(n, rp-o))/pa;
-    x = rp + rv*h;
-    if(sett->inal(av,cv,x-o) && sett->inal(av,cv,o+av+cv-x) && ox.dist>h) {dc = 155+100*abs(sett->dot(n, sett->light)); ox={h, rgb*sf::Color(dc,dc,dc)};}
-    o+=sett->trans(al, s);
-    n = sett->ort(sett->dat(av, bv));
-    pa = abs(sett->dot(n, rv));
-    h = abs(sett->dot(n, rp-o))/pa;
-    x = rp + rv*h;
-    if(sett->inal(av,bv,x-o) && sett->inal(av,bv,o-av-bv-x) && ox.dist>h) {dc = 155+100*abs(sett->dot(n, sett->light)); ox={h, rgb*sf::Color(dc,dc,dc)};}
-    n = sett->ort(sett->dat(bv, cv));
-    pa = abs(sett->dot(n, rv));
-    h = abs(sett->dot(n, rp-o))/pa;
-    x = rp + rv*h;
-    if(sett->inal(bv,cv,x-o) && sett->inal(bv,cv,o-bv-cv-x) && ox.dist>h) {dc = 155+100*abs(sett->dot(n, sett->light)); ox={h, rgb*sf::Color(dc,dc,dc)};}
-    n = sett->ort(sett->dat(av, cv));
-    pa = abs(sett->dot(n, rv));
-    h = abs(sett->dot(n, rp-o))/pa;
-    x = rp + rv*h;
-    if(sett->inal(av,cv,x-o) && sett->inal(av,cv,o-av-bv-x) && ox.dist>h) {dc = 155+100*abs(sett->dot(n, sett->light)); ox={h, rgb*sf::Color(dc,dc,dc)};}
+    rp-=pos;
+    if((rv.y==0 && 2*abs(rp.y)>s.y) || (rv.z==0 && 2*abs(rp.z)>s.z)) return ox;
+    sf::Vector3f n(rp.x/rv.x, rp.y/rv.y, rp.z/rv.z);
+    sf::Vector3f k(0.5f*s.x/abs(rv.x), 0.5f*s.y/abs(rv.y), 0.5f*s.z/abs(rv.z));
+    sf::Vector3f t2=-n-k;
+    sf::Vector3f t1=-n+k;
+    float ss=std::max(std::max(t2.x,t2.y),t2.z);
+    float ff=std::min(std::min(t1.x,t1.y),t1.z);
+    if(ff<ss || ff<0) return ox;
+    // if(rv.y==0) std::cout<<t1.x<<' '<<t1.y<<' '<<t1.z<<"\n";
+    // if(rv.y==0) std::cout<<t2.x<<' '<<t2.y<<' '<<t2.z<<"\n";
+    ox.dist=std::min(ss,ox.dist);
     return ox;
 }

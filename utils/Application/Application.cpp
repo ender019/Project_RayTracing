@@ -41,7 +41,7 @@ App::App():
 
     objects.push_back(new SphearObj(sf::Vector3f(600, 250, 30), 30));
     // objects.push_back(new SphearObj(sf::Vector2f(750,200), 50));
-    objects.push_back(new RectObj({780, 350, 30}, {50, 50, 50}));
+    objects.push_back(new RectObj({780, 350, 70}, {50, 50, 50}));
     // objects.push_back(new RectObj(sf::Vector2f(580,480), 50, 30, 45));
     // objects.push_back(new LineObj(100,100,900,300));
     // objects.push_back(new LineObj(sf::Vector2f(650,150), 620, 120));
@@ -71,8 +71,8 @@ void App::run()
         // if(sf::Keyboard::isKeyPressed(sf::Keyboard::S)){camera.move(objects, {0,0,180});}
         // if(sf::Keyboard::isKeyPressed(sf::Keyboard::A)){camera.move(objects, {0,0,-90});}
         // if(sf::Keyboard::isKeyPressed(sf::Keyboard::D)){camera.move(objects, {0,0,90});}
-        // sf::Mouse::setPosition(sf::Vector2i(sett->W/2, sett->H/2), window);
-        // camera.rotate({0,dx.y*elapsed.asSeconds(),dx.x*elapsed.asSeconds()});
+        sf::Mouse::setPosition(sf::Vector2i(sett->W/2, sett->H/2), window);
+        camera.rotate({0,dx.y*elapsed.asSeconds(),dx.x*elapsed.asSeconds()});
         window.clear(sf::Color::White);
 
         dist = camera.tracing(objects);
