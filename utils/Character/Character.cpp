@@ -1,5 +1,12 @@
 #include "Character.hpp"
 
+void Character::rot(sf::Vector3f& a, sf::Vector3f al)
+{
+    al.z = M_PI*al.z/180;    al.y = M_PI*al.y/180;
+    a = sf::Vector3f(std::cos(al.y), 0, -std::sin(al.y));
+    a = sf::Vector3f(a.x*std::cos(al.z), a.x*std::sin(al.z), a.z);
+}
+
 void Character::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     states.transform *= getTransform();
@@ -9,37 +16,32 @@ void Character::draw(sf::RenderTarget& target, sf::RenderStates states) const
 }
 
 Character::Character(sf::Vector3f _pos, sf::Vector3f _nal): 
-    camera(3.f), conture(sf::LineStrip, sett->discr.x+2), rays(sett->discr.y, std::vector<sf::Vector3f>(sett->discr.x, sett->trans(_nal))),
+    camera(3.f), conture(sf::LineStrip, sett->discr.x+2), rays(sett->discr.y, std::vector<sf::Vector3f>(sett->discr.x, {1,0,0})),
     pos(_pos), ray_kol(sett->discr), size(sett->size), nal(_nal)
 {
     camera.setFillColor(sf::Color::Black);
-    camera.move(sf::Vector2f(pos.x, pos.y)-sf::Vector2f(size, size)); 
-    conture[0].position = sf::Vector2f(pos.x, pos.y);
-    conture[ray_kol.x+1].position = sf::Vector2f(pos.x, pos.y);
+    camera.move({pos.x-size, pos.y-size}); 
+    conture[0].position = {pos.x, pos.y};
+    conture[ray_kol.x+1].position = {pos.x, pos.y};
     for (int i = 0; i < ray_kol.y; i++){
-        for (int j = 0; j < ray_kol.x; j++) {sett->rot(rays[i][j], {0, sett->vis.y*((float)i/ray_kol.y-0.5f), sett->vis.x*((float)j/ray_kol.x-0.5f)});}
+        for (int j = 0; j < ray_kol.x; j++) {rot(rays[i][j], {0, nal.y+sett->vis.y*((float)i/ray_kol.y-0.5f), nal.z+sett->vis.x*((float)j/ray_kol.x-0.5f)});}
     }
-    // std::cout<<rays[399][599].x<<' '<<rays[399][599].y<<' '<<rays[399][599].z<<' '<<'\n';
-    // std::cout<<rays[399][0].x<<' '<<rays[399][0].y<<' '<<rays[399][0].z<<' '<<'\n';
-    // std::cout<<rays[399][1199].x<<' '<<rays[399][1199].y<<' '<<rays[399][1199].z<<' '<<'\n';
-    // std::cout<<rays[0][599].x<<' '<<rays[0][599].y<<' '<<rays[0][599].z<<' '<<'\n';
-    // std::cout<<rays[799][599].x<<' '<<rays[799][599].y<<' '<<rays[799][599].z<<' '<<'\n';
 }
 
 void Character::rotate(sf::Vector3f w)
 {
-    sett->rot(nal, w*feeling);
+    if(abs(nal.z + w.z*feeling)>89) {nal.z=(1-2*(nal.y<0))*89;} //std::cout<<nal.y<<'\n';
+    else nal += w*feeling;
     for (int i = 0; i < ray_kol.y; i++)
     {
-        for (int j = 0; j < ray_kol.x; j++){sett->rot(rays[i][j], w*feeling);}
+        for (int j = 0; j < ray_kol.x; j++){rot(rays[i][j], {0, nal.y+sett->vis.y*((float)i/ray_kol.y-0.5f), nal.z+sett->vis.x*((float)j/ray_kol.x-0.5f)});}
     }
 }
 void Character::move(std::vector<GeomObject*> objects, sf::Vector3f p)
 {
-    sf::Vector3f vec = nal;
-    sf::Vector3f d_v = {0, 0, 0};
+    sf::Vector3f vec = {2,0,0}, d_v = {0, 0, 0};
     std::vector<sf::Vector3f> n;
-    sett->rot(vec, p);
+    rot(vec, nal+p);
     // sf::Vector3f l=vec, r=vec;
     // for (int i = 0; i < objects.size(); i++)
     // {
@@ -53,10 +55,12 @@ void Character::move(std::vector<GeomObject*> objects, sf::Vector3f p)
     // if(sett->dot(-vec, r+l) > abs(sett->dot(l, r+l))) {d_v = vec;}
     // else if(sett->dot(vec, r)<0) {d_v = sett->dot(vec, r)*r;}
     // else if(sett->dot(vec, l)<0) {d_v = sett->dot(vec, l)*l;}
+    // std::cout<<vec.x<<' '<<vec.y<<' '<<vec.z<<"\n";
+    // std::cout<<nal.x<<' '<<nal.y<<' '<<nal.z<<"\n";
     vec -= d_v; pos+=vec;
-    camera.move(sf::Vector2f(vec.x, vec.y));
-    conture[0].position=sf::Vector2f(pos.x, pos.y);
-    conture[ray_kol.x+1].position=sf::Vector2f(pos.x, pos.y);
+    camera.move({vec.x, vec.y});
+    conture[0].position={pos.x, pos.y};
+    conture[ray_kol.x+1].position={pos.x, pos.y};
 }
 std::vector<Settings::vis_point> Character::tracing(std::vector<GeomObject*> objects)
 {
@@ -71,9 +75,7 @@ std::vector<Settings::vis_point> Character::tracing(std::vector<GeomObject*> obj
                 ox = objects[g]->intersect(pos, rays[i][j]);
                 if(ox.dist < mat[i*ray_kol.x+j].dist) mat[i*ray_kol.x+j] = ox;
             }
-            if(i==399){
-                conture[j+1].position = sf::Vector2f(pos.x, pos.y) + mat[i*ray_kol.x+j].dist*sf::Vector2f(rays[i][j].x, rays[i][j].y);
-            }
+            if(i==399) {conture[j+1].position = sf::Vector2f(pos.x, pos.y) + mat[i*ray_kol.x+j].dist*sf::Vector2f(rays[i][j].x, rays[i][j].y);}
         }
     }
     return mat;

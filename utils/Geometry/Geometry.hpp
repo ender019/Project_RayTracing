@@ -67,6 +67,22 @@ public:
     virtual Settings::vis_point intersect(sf::Vector3f rp, sf::Vector3f rv);
 };
 
+class PlaneObj : public GeomObject
+{
+protected:
+    sf::RectangleShape obj;
+    sf::Vector3f nr;
+    float d;
+protected: 
+    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
+public:
+    PlaneObj(sf::Vector3f _pos, sf::Vector3f _k);
+
+    virtual void scale(GeomObject*& c);
+    virtual std::vector<sf::Vector3f> collision(sf::Vector3f pls);
+    virtual Settings::vis_point intersect(sf::Vector3f rp, sf::Vector3f rv);
+};
+
 class RectObj : public GeomObject
 {
 protected:

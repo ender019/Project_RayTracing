@@ -39,9 +39,10 @@ App::App():
 	settings.antialiasingLevel = 8;
     window.setFramerateLimit(60);
 
-    objects.push_back(new SphearObj(sf::Vector3f(600, 250, 30), 30));
+    objects.push_back(new PlaneObj({0, 0, 0}, {0, 0, 1}));
+    objects.push_back(new SphearObj(sf::Vector3f(600, 250, 30), 35));
     // objects.push_back(new SphearObj(sf::Vector2f(750,200), 50));
-    objects.push_back(new RectObj({780, 350, 70}, {50, 50, 50}));
+    objects.push_back(new RectObj({780, 350, 30}, {50, 50, 50}));
     // objects.push_back(new RectObj(sf::Vector2f(580,480), 50, 30, 45));
     // objects.push_back(new LineObj(100,100,900,300));
     // objects.push_back(new LineObj(sf::Vector2f(650,150), 620, 120));
@@ -57,7 +58,6 @@ App::App():
 }
 void App::run()
 {
-    // std::cout<<sett->discr.x*sett->discr.y<<'\n';
     while (window.isOpen())
     {
         sf::Event event;
@@ -67,10 +67,10 @@ void App::run()
         }
         sf::Time elapsed = clock.restart();
         sf::Vector2f dx = window.mapPixelToCoords(sf::Mouse::getPosition(window)) - sf::Vector2f(sett->W/2, sett->H/2);
-        // if(sf::Keyboard::isKeyPressed(sf::Keyboard::W)){camera.move(objects, {0,0,0});}
-        // if(sf::Keyboard::isKeyPressed(sf::Keyboard::S)){camera.move(objects, {0,0,180});}
-        // if(sf::Keyboard::isKeyPressed(sf::Keyboard::A)){camera.move(objects, {0,0,-90});}
-        // if(sf::Keyboard::isKeyPressed(sf::Keyboard::D)){camera.move(objects, {0,0,90});}
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::W)){camera.move(objects, {0,0,0});}
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::S)){camera.move(objects, {0,0,180});}
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::A)){camera.move(objects, {0,0,-90});}
+        if(sf::Keyboard::isKeyPressed(sf::Keyboard::D)){camera.move(objects, {0,0,90});}
         sf::Mouse::setPosition(sf::Vector2i(sett->W/2, sett->H/2), window);
         camera.rotate({0,dx.y*elapsed.asSeconds(),dx.x*elapsed.asSeconds()});
         window.clear(sf::Color::White);

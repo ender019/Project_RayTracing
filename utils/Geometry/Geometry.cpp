@@ -130,6 +130,51 @@ SET::vis_point BoxObj::intersect(sf::Vector3f rp, sf::Vector3f rv)
     return ox;
 }
 
+void PlaneObj::draw(sf::RenderTarget& target, sf::RenderStates states) const
+{
+    states.transform *= getTransform();
+    states.texture = NULL;
+    target.draw(obj, states);
+}
+
+PlaneObj::PlaneObj(sf::Vector3f _pos, sf::Vector3f _k): 
+    GeomObject(_pos, sf::Color(100, 100, 100)), obj({sett->scale*sett->W, sett->scale*sett->H}), 
+    nr(sett->ort(_k)), d(-sett->dot(sett->ort(_k),_pos))
+{
+    obj.setFillColor(rgb);
+}
+
+void PlaneObj::scale(GeomObject*& C)
+{
+    C = new PlaneObj(sett->scale*pos, nr);
+}
+std::vector<sf::Vector3f> PlaneObj::collision(sf::Vector3f pls)
+{
+    // sf::Vector3f o1=pls-trans(pos, sf::Vector3f(pos.x-a/2, pos.y-b/2), al);
+    // sf::Vector3f o2=pls-trans(pos, sf::Vector3f(pos.x+a/2, pos.y-b/2), al);
+    // sf::Vector3f o3=pls-trans(pos, sf::Vector3f(pos.x+a/2, pos.y+b/2), al);
+    // sf::Vector3f o4=pls-trans(pos, sf::Vector3f(pos.x-a/2, pos.y+b/2), al);
+    // sf::Vector3f v(std::cos(M_PI*al/180), std::sin(M_PI*al/180));
+    // sf::Vector3f n=sett->norm(v);
+    // float d = sett->dat(v, o1);
+    // if(!(abs(d)>sett->size || sett->mod(o1)>sett->mod(a*v)+sett->size/3 || sett->mod(o2)>sett->mod(a*v)+sett->size/3)) return {sett->ort(n * sett->dot(n, o1))};
+    // d = sett->dat(n, o2);
+    // if(!(abs(d)>sett->size || sett->mod(o2)>sett->mod(b*n)+sett->size/3 || sett->mod(o3)>sett->mod(b*n)+sett->size/3)) return {sett->ort(v * sett->dot(v, o2))};
+    // d = sett->dat(v, o3);
+    // if(!(abs(d)>sett->size || sett->mod(o3)>sett->mod(a*v)+sett->size/3 || sett->mod(o4)>sett->mod(a*v)+sett->size/3)) return {sett->ort(n * sett->dot(n, o3))};
+    // d = sett->dat(n, o4);
+    // if(!(abs(d)>sett->size || sett->mod(o4)>sett->mod(b*n)+sett->size/3 || sett->mod(o1)>sett->mod(b*n)+sett->size/3)) return {sett->ort(v * sett->dot(v, o4))};
+    return {};
+}
+SET::vis_point PlaneObj::intersect(sf::Vector3f rp, sf::Vector3f rv)
+{
+    SET::vis_point ox{sett->len, rgb};
+    if(sett->dot(nr,rv)>=0) return ox;
+    float h = abs((sett->dot(nr,rp)+d)/sett->dot(nr,rv));
+    // std::cout<<d<<' '<<h<<' '<<rp.z<<"\n";
+    ox.dist=std::min(h,ox.dist);
+    return ox;
+}
 
 void RectObj::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {

@@ -11,13 +11,13 @@ private:
     sf::Vector3f pos;
     sf::Vector3f nal;
     float size;
-    float feeling = 1.5;
+    float feeling = 0.5f;
     sf::Vector2i ray_kol;
 
     friend class Map;
 
 protected: 
-
+    void rot(sf::Vector3f& a, sf::Vector3f al);
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
     
 public:
