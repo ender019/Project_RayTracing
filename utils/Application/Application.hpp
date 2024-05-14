@@ -5,7 +5,6 @@
 class Screen : public sf::Drawable, public sf::Transformable
 {
 private:
-    std::vector<sf::Uint8> vission;
     sf::Texture tex;
     sf::Sprite obj;
     sf::Vector2i kol;
@@ -14,7 +13,7 @@ private:
 public:
     Screen();
 
-    void update(std::vector<Settings::vis_point> dist);
+    void update();
 };
 
 
@@ -25,7 +24,6 @@ private:
     sf::RenderWindow window;
     sf::Clock clock;
     sf::Vector3f cam_pos;
-    std::vector<Settings::vis_point> dist;
     FPS counter;
     Character camera;
     std::vector<GeomObject*> objects;

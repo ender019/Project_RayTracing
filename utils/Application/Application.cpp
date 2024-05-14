@@ -8,40 +8,28 @@ void Screen::draw(sf::RenderTarget& target, sf::RenderStates states) const
     target.draw(obj);
 }
 
-Screen::Screen(): vission(sett->discr.x*sett->discr.y*4), kol(sett->discr)
+Screen::Screen(): kol(sett->discr)
 {
     tex.create(sett->discr.x, sett->discr.y); 
     obj.setTexture(tex);
-    for (int i = 0; i < kol.x*kol.y; i++) {vission[i] = 255;}
 }
     
-void Screen::update(std::vector<Settings::vis_point> dist)
+void Screen::update()
 {
-    float h, dc;
-    for (int i = 0; i < kol.x*kol.y; i++)
-    {
-        // if(dist[i].dist>=sett->len-1) { dc=255;}
-        // else dc = 255-50*dist[i].dist/sett->len;
-        vission[4*i] = dist[i].rgb.r; //*sf::Color(dc,dc,dc);
-        vission[4*i+1] = dist[i].rgb.g;
-        vission[4*i+2] = dist[i].rgb.b;
-        vission[4*i+3] = dist[i].rgb.a;
-    }
-    tex.update(vission.data());
+    tex.update(sett->vission.data());
 }
 
 
 App::App(): 
     window(sf::VideoMode(sett->W, sett->H), "window", sf::Style::Default, settings), 
-    cam_pos(300, 300, 30), dist(sett->discr.x),
-    camera(cam_pos), screen(), map(camera)
+    cam_pos(300, 300, 30), camera(cam_pos), screen(), map(camera)
 {
 	settings.antialiasingLevel = 8;
     window.setFramerateLimit(60);
 
     objects.push_back(new PlaneObj({0, 0, 0}, {0, 0, 1}));
     objects.push_back(new SphearObj(sf::Vector3f(600, 250, 30), 35));
-    // objects.push_back(new SphearObj(sf::Vector2f(750,200), 50));
+    objects.push_back(new SphearObj(sf::Vector3f(750,200, 40), 50));
     objects.push_back(new RectObj({780, 350, 30}, {50, 50, 50}));
     // objects.push_back(new RectObj(sf::Vector2f(580,480), 50, 30, 45));
     // objects.push_back(new LineObj(100,100,900,300));
@@ -56,6 +44,7 @@ App::App():
     // objects.push_back(new BoxObj(sf::Vector2f(sett->W/2,sett->H/2), sett->W-20, sett->H-20));
     map.reload(objects);
 }
+
 void App::run()
 {
     while (window.isOpen())
@@ -75,8 +64,8 @@ void App::run()
         camera.rotate({0,dx.y*elapsed.asSeconds(),dx.x*elapsed.asSeconds()});
         window.clear(sf::Color::White);
 
-        dist = camera.tracing(objects);
-        screen.update(dist);
+        camera.tracing(objects);
+        screen.update();
         map.update(camera);
 
         window.draw(screen);

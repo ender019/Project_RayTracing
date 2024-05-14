@@ -37,6 +37,7 @@ public:
     float size = 3.f;
     float scale = 1.f/6.f;
     sf::Vector3f light = {1, 1, -1};
+    std::vector<sf::Uint8> vission;
     
     Settings(Settings const&) = delete;
     Settings& operator=(Settings const&) = delete;

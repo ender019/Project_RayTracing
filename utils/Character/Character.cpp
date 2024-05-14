@@ -62,21 +62,23 @@ void Character::move(std::vector<GeomObject*> objects, sf::Vector3f p)
     conture[0].position={pos.x, pos.y};
     conture[ray_kol.x+1].position={pos.x, pos.y};
 }
-std::vector<Settings::vis_point> Character::tracing(std::vector<GeomObject*> objects)
+void Character::tracing(std::vector<GeomObject*> objects)
 {
-    std::vector<Settings::vis_point> mat(ray_kol.x*ray_kol.y, {sett->len, sf::Color::White});
-    Settings::vis_point ox; 
+    SET::vis_point pix, ox;
     for (int i = 0; i < ray_kol.y; i++)
     {
         for (int j = 0; j < ray_kol.x; j++)
         {
+            pix={sett->len, sf::Color::White};
             for (int g = 0; g < objects.size(); g++)
             {
                 ox = objects[g]->intersect(pos, rays[i][j]);
-                if(ox.dist < mat[i*ray_kol.x+j].dist) mat[i*ray_kol.x+j] = ox;
+                if(ox.dist < pix.dist) pix = ox;
             }
-            if(i==399) {conture[j+1].position = sf::Vector2f(pos.x, pos.y) + mat[i*ray_kol.x+j].dist*sf::Vector2f(rays[i][j].x, rays[i][j].y);}
+            sett->vission[4*(ray_kol.x*i+j)] = pix.rgb.r;
+            sett->vission[4*(ray_kol.x*i+j)+1] = pix.rgb.g;
+            sett->vission[4*(ray_kol.x*i+j)+2] = pix.rgb.b;
+            if(i==399) {conture[j+1].position = {pos.x+pix.dist*rays[i][j].x, pos.y+pix.dist*rays[i][j].y};}
         }
     }
-    return mat;
 }
