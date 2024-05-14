@@ -24,7 +24,7 @@ public:
     float visual_al = 60.f;
     float size = 3.f;
     float scale = 1.f/6;
-    sf::Vector2f light={0,1};
+    sf::Vector2f light={0, 1};
     
     Settings(Settings const&) = delete;
     Settings& operator=(Settings const&) = delete;

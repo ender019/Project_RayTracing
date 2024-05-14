@@ -45,7 +45,7 @@ Settings::vis_point CircleObj::intersect(sf::Vector2f rp, sf::Vector2f rv)
     float bh = r*r - ao + ah*ah;
     if(bh < 0 || ah<0) return {sett->len, rgb};
     float h = sqrt(bh);
-    float dc = 100+155*abs(dot(ort((ah-h)*rv-aov), rv));
+    float dc = 100+155*std::max(dot(ort((ah-h)*rv-aov), sett->light), 0.f);
     // std::cout<<dot(ort(h*rv-aov), rv)<<'\n';
     return {std::min(ah - h, sett->len), rgb*sf::Color(dc,dc,dc)};
 }
@@ -87,12 +87,13 @@ Settings::vis_point LineObj::intersect(sf::Vector2f rp, sf::Vector2f rv)
 {
     sf::Vector2f v=ort(sf::Vector2f(a2-a1, b2-b1));
     sf::Vector2f n=norm(v);
+    if(dot(n,rv)>0){n*=-1.f;}
     float pa = dot(n, rv);
     float h = dat(v, rp-pos);
     sf::Vector2f x = rp + rv*abs(h/pa);
     if(lin(sf::Vector2f(a1, b1), sf::Vector2f(a2, b2), x) && sett->len>=abs(h/pa))
     {
-        float dc = 155+100*abs(pa); 
+        float dc = 100+155*std::max(dot(n, sett->light), 0.f); 
         return {abs(h/pa), rgb*sf::Color(dc,dc,dc)};
     }
     return {sett->len, rgb};
@@ -138,13 +139,19 @@ Settings::vis_point BoxObj::intersect(sf::Vector2f rp, sf::Vector2f rv)
     float pa, h, dc;
     Settings::vis_point ox{sett->len, rgb}; 
     sf::Vector2f o, x, v(std::cos(M_PI*al/180), std::sin(M_PI*al/180)), n=norm(v);
+    if(dot(n,rv)>0){n*=-1.f;}
+    if(dot(v,rv)>0){v*=-1.f;}
     for (int i = 0; i < 4; i++)
     {
         o=obj[i].position;
         pa = dot(n, rv);
         h = dat(v, rp-o);
         x = rp + rv*abs(h/pa);
-        if(lin(o, obj[i+1].position, x) && sett->len>=abs(h/pa) && ox.dist>abs(h/pa)) {dc = 155+100*abs(pa); ox={abs(h/pa), rgb*sf::Color(dc,dc,dc)};}
+        if(lin(o, obj[i+1].position, x) && sett->len>=abs(h/pa) && ox.dist>abs(h/pa)) 
+        {
+            dc = 155+100*std::max(dot(n, sett->light), 0.f); 
+            ox={abs(h/pa), rgb*sf::Color(dc,dc,dc)};    
+        }
         std::swap(v, n);
     }
     return ox;
@@ -193,23 +200,41 @@ Settings::vis_point RectObj::intersect(sf::Vector2f rp, sf::Vector2f rv)
     sf::Vector2f o=trans(pos, sf::Vector2f(pos.x-a/2, pos.y-b/2), al);
     sf::Vector2f v(std::cos(M_PI*al/180), std::sin(M_PI*al/180));
     sf::Vector2f n=norm(v);
+    if(dot(n,rv)>0){n*=-1.f;}
+    if(dot(v,rv)>0){v*=-1.f;}
     float dc;
     float pa = dot(n, rv);
     float h = dat(v, rp-o);
     sf::Vector2f x = rp + rv*abs(h/pa);
-    if(lin(o, trans(o, sf::Vector2f(o.x+a, o.y), al), x) && sett->len>=abs(h/pa) && ox.dist>abs(h/pa)) {dc = 155+100*abs(pa); ox={abs(h/pa), rgb*sf::Color(dc,dc,dc)};}
+    if(lin(o, trans(o, sf::Vector2f(o.x+a, o.y), al), x) && sett->len>=abs(h/pa) && ox.dist>abs(h/pa)) 
+    {
+        dc = 100+155*std::max(dot(n, sett->light), 0.f); 
+        ox = {abs(h/pa), rgb*sf::Color(dc,dc,dc)};
+    }
     pa = dot(v, rv);
     h = dat(n, rp-o);
     x = rp + rv*abs(h/pa);
-    if(lin(o, trans(o, sf::Vector2f(o.x, o.y+b), al), x) && sett->len>=abs(h/pa) && ox.dist>abs(h/pa)) {dc = 155+100*abs(pa); ox={abs(h/pa), rgb*sf::Color(dc,dc,dc)};}
+    if(lin(o, trans(o, sf::Vector2f(o.x, o.y+b), al), x) && sett->len>=abs(h/pa) && ox.dist>abs(h/pa)) 
+    {
+        dc = 100+155*std::max(dot(v, sett->light), 0.f); 
+        ox = {abs(h/pa), rgb*sf::Color(dc,dc,dc)};
+    }
     o=trans(pos, sf::Vector2f(pos.x+a/2, pos.y+b/2), al);
     pa = dot(n, rv);
     h = dat(v, rp-o);
     x = rp + rv*abs(h/pa);
-    if(lin(o, trans(o, sf::Vector2f(o.x-a, o.y), al), x) && sett->len>=abs(h/pa) && ox.dist>abs(h/pa)) {dc = 155+100*abs(pa); ox={abs(h/pa), rgb*sf::Color(dc,dc,dc)};}
+    if(lin(o, trans(o, sf::Vector2f(o.x-a, o.y), al), x) && sett->len>=abs(h/pa) && ox.dist>abs(h/pa)) 
+    {
+        dc = 100+155*std::max(dot(n, sett->light), 0.f); 
+        ox = {abs(h/pa), rgb*sf::Color(dc,dc,dc)};
+    }
     pa = dot(v, rv);
     h = dat(n, rp-o);
     x = rp + rv*abs(h/pa);
-    if(lin(o, trans(o, sf::Vector2f(o.x, o.y-b), al), x) && sett->len>=abs(h/pa) && ox.dist>abs(h/pa)) {dc = 155+100*abs(pa); ox={abs(h/pa), rgb*sf::Color(dc,dc,dc)};}
+    if(lin(o, trans(o, sf::Vector2f(o.x, o.y-b), al), x) && sett->len>=abs(h/pa) && ox.dist>abs(h/pa)) 
+    {
+        dc = 100+155*std::max(dot(v, sett->light), 0.f); 
+        ox = {abs(h/pa), rgb*sf::Color(dc,dc,dc)};
+    }
     return ox;
 }

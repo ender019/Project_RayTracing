@@ -73,7 +73,6 @@ std::vector<Settings::vis_point> Character::tracing(std::vector<GeomObject*> obj
             ox = objects[j]->intersect(pos, rays[i]);
             if(ox.dist < mat[i].dist) mat[i] = ox;
         }
-        conture[i+1].color = sf::Color::Red;
         conture[i+1].position = pos + mat[i].dist*rays[i];
     }
     return mat;

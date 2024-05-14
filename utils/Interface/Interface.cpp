@@ -20,7 +20,7 @@ Map::Map(Character player_, float p):
     camera.move(p*player_.pos);
     for (int i = 0; i < kol; i++)
     {
-        conture[i] = player_.conture[i];
+        conture[i].color = sf::Color::Red;
         conture[i].position = p*player_.conture[i].position;
     }
 }
@@ -38,7 +38,6 @@ void Map::reload(std::vector<GeomObject*> objects_)
 void Map::update(Character player)
 {
     camera.setPosition(part * player.pos);
-    conture = player.conture;
     for (int i = 0; i < kol; i++){conture[i].position = part*player.conture[i].position;}
 }
 
