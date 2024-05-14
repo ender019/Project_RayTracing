@@ -45,25 +45,25 @@ void Map::update(Character player)
 Map::~Map(){for (int i = 0; i < objects.size(); i++){delete objects[i];}}
 
 
-void FPS::draw(sf::RenderTarget& target, sf::RenderStates states) const
-{
-    states.transform *= getTransform();
-    states.texture = NULL;
-    target.draw(fps_lable, states);
-}
+// void FPS::draw(sf::RenderTarget& target, sf::RenderStates states) const
+// {
+//     states.transform *= getTransform();
+//     states.texture = NULL;
+//     target.draw(fps_lable, states);
+// }
 
-FPS::FPS()
-{
-    if (!font.loadFromFile("times.ttf")) std::cout<<"error\n";
-	fps_lable.setFont(font); 
-    fps_lable.setString("0");
-    fps_lable.setCharacterSize(20); 
-	fps_lable.setFillColor(sf::Color::Black);
-	fps_lable.setPosition(sf::Vector2f(sett->W-35,8));
-}
+// FPS::FPS()
+// {
+//     if (!font.loadFromFile("times.ttf")) std::cout<<"error\n";
+// 	fps_lable.setFont(font); 
+//     fps_lable.setString("0");
+//     fps_lable.setCharacterSize(20); 
+// 	fps_lable.setFillColor(sf::Color::Black);
+// 	fps_lable.setPosition(sf::Vector2f(sett->W-35,8));
+// }
 
-void FPS::update(float dt)
-{
-    t+=dt; fps++;
-    if(t>=1){fps_lable.setString(std::to_string(fps)); fps=0; t=0;}
-}
+// void FPS::update(float dt)
+// {
+//     t+=dt; fps++;
+//     if(t>=1){fps_lable.setString(std::to_string(fps)); fps=0; t=0;}
+// }

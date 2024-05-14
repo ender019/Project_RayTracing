@@ -45,7 +45,7 @@ Settings::vis_point CircleObj::intersect(sf::Vector2f rp, sf::Vector2f rv)
     float bh = r*r - ao + ah*ah;
     if(bh < 0 || ah<0) return {sett->len, rgb};
     float h = sqrt(bh);
-    float dc = 100+155*abs(dot(ort(h*rv-aov), rv));
+    float dc = 100+155*abs(dot(ort((ah-h)*rv-aov), rv));
     // std::cout<<dot(ort(h*rv-aov), rv)<<'\n';
     return {std::min(ah - h, sett->len), rgb*sf::Color(dc,dc,dc)};
 }

@@ -17,6 +17,8 @@ Screen::Screen(int kol_):
     floor.setFillColor(sf::Color(200, 165, 0));
     sky.setFillColor(sf::Color(165, 165, 255));
     floor.move(sf::Vector2f(0, sett->H/2));
+    if(!shader.loadFromFile("shader.frag", sf::Shader::Fragment)) std::cout<<"error\n";
+	shader.setUniform("u_resolution", sf::Vector2f(sett->W, sett->H));
     for (int i = 0; i < kol; i++)
     {
         vission[i].move(sf::Vector2f(i*(sett->W/kol), sett->H/2));
@@ -91,8 +93,8 @@ void App::run()
 
         window.draw(screen);
         window.draw(map);
-        counter.update(elapsed.asSeconds());
-        window.draw(counter);
+        // counter.update(elapsed.asSeconds());
+        // window.draw(counter);
         window.display();
     }
 }

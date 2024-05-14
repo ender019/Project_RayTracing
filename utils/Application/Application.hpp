@@ -7,6 +7,7 @@ class Screen : public sf::Drawable, public sf::Transformable
 private:
     sf::RectangleShape floor;
     sf::RectangleShape sky;
+    sf::Shader shader;
     std::vector<sf::RectangleShape> vission;
     int kol;
 private:
@@ -26,7 +27,7 @@ private:
     sf::Clock clock;
     sf::Vector2f cam_pos;
     std::vector<Settings::vis_point> dist;
-    FPS counter;
+    // FPS counter;
     Character camera;
     std::vector<GeomObject*> objects;
     Screen screen;
