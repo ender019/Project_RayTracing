@@ -7,6 +7,7 @@ class GeomObject : public sf::Drawable, public sf::Transformable
 protected:
     sf::Vector2f pos;
     sf::Color rgb;
+    float otr;
 
 protected: 
     float mod(sf::Vector2f pos);
@@ -19,7 +20,7 @@ protected:
 
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const = 0;
 public:
-    GeomObject(sf::Vector2f pos_, sf::Color rgb_);
+    GeomObject(sf::Vector2f pos_, sf::Color rgb_, float _otr = 0);
 
     virtual void scale(GeomObject*& c) = 0;
     virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls) = 0;
@@ -34,7 +35,7 @@ protected:
 protected: 
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 public:
-    CircleObj(sf::Vector2f pos_, float r_);
+    CircleObj(sf::Vector2f pos_, float r_, float _otr = 0);
 
     virtual void scale(GeomObject*& c);
     virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls);
@@ -50,8 +51,8 @@ protected:
 protected:
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 public:
-    LineObj(sf::Vector2f pos_, float l, float al = 0);
-    LineObj(float a1_, float b1_, float a2_, float b2_);
+    LineObj(sf::Vector2f pos_, float l, float al = 0, float _otr = 0);
+    LineObj(float a1_, float b1_, float a2_, float b2_, float _otr = 0);
 
     virtual void scale(GeomObject*& c);
     virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls);
@@ -68,7 +69,7 @@ protected:
 protected: 
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 public:
-    BoxObj(sf::Vector2f pos_, float a_, float b_, float al_=0);
+    BoxObj(sf::Vector2f pos_, float a_, float b_, float al_=0, float _otr = 0);
 
     virtual void scale(GeomObject*& c);
     virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls);
@@ -85,7 +86,7 @@ protected:
 protected: 
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 public:
-    RectObj(sf::Vector2f pos_, float a_, float b_, float al_=0);
+    RectObj(sf::Vector2f pos_, float a_, float b_, float al_=0, float _otr = 0);
 
     virtual void scale(GeomObject*& c);
     virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls);
