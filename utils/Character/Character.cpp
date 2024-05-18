@@ -1,4 +1,5 @@
 #include "Character.hpp"
+#include <thread>
 
 void Character::rot(sf::Vector3f& a, sf::Vector3f al)
 {
@@ -32,11 +33,22 @@ void Character::rotate(sf::Vector3f w)
 {
     if(abs(nal.z + w.z*feeling)>89) {nal.z=(1-2*(nal.y<0))*89;} //std::cout<<nal.y<<'\n';
     else nal += w*feeling;
-    for (int i = 0; i < ray_kol.y; i++)
+
+    auto func = [&](int a, int b)
     {
-        for (int j = 0; j < ray_kol.x; j++){rot(rays[i][j], {0, nal.y+sett->vis.y*((float)i/ray_kol.y-0.5f), nal.z+sett->vis.x*((float)j/ray_kol.x-0.5f)});}
+        for (int i = 0; i < ray_kol.y; i++)
+        {
+            for (int j = a; j < b; j++){rot(rays[i][j], {0, nal.y+sett->vis.y*((float)i/ray_kol.y-0.5f), nal.z+sett->vis.x*((float)j/ray_kol.x-0.5f)});}
+        }
+    };
+    std::vector<std::thread> th;
+    for (int i = 0; i < sett->thp; i++)
+    {
+        th.push_back(std::thread(func, i*ray_kol.x/sett->thp, (i+1)*ray_kol.x/sett->thp));
     }
+	for (int i = 0; i < sett->thp; i++) {th[i].join();}
 }
+
 void Character::move(std::vector<GeomObject*> objects, sf::Vector3f p)
 {
     sf::Vector3f vec = {2,0,0}, d_v = {0, 0, 0};
@@ -64,21 +76,29 @@ void Character::move(std::vector<GeomObject*> objects, sf::Vector3f p)
 }
 void Character::tracing(std::vector<GeomObject*> objects)
 {
-    SET::vis_point pix, ox;
-    for (int i = 0; i < ray_kol.y; i++)
-    {
-        for (int j = 0; j < ray_kol.x; j++)
+    auto func = [&](int a, int b){
+        SET::vis_point pix, ox;
+        for (int i = 0; i < ray_kol.y; i++)
         {
-            pix={sett->len, sf::Color::White};
-            for (int g = 0; g < objects.size(); g++)
+            for (int j = a; j < b; j++)
             {
-                ox = objects[g]->intersect(pos, rays[i][j]);
-                if(ox.dist < pix.dist) pix = ox;
+                pix={sett->len, sf::Color::White};
+                for (int g = 0; g < objects.size(); g++)
+                {
+                    ox = objects[g]->intersect(pos, rays[i][j]);
+                    if(ox.dist < pix.dist) pix = ox;
+                }
+                sett->vission[4*(ray_kol.x*i+j)] = pix.rgb.r;
+                sett->vission[4*(ray_kol.x*i+j)+1] = pix.rgb.g;
+                sett->vission[4*(ray_kol.x*i+j)+2] = pix.rgb.b;
+                if(i==399) {conture[j+1].position = {pos.x+pix.dist*rays[i][j].x, pos.y+pix.dist*rays[i][j].y};}
             }
-            sett->vission[4*(ray_kol.x*i+j)] = pix.rgb.r;
-            sett->vission[4*(ray_kol.x*i+j)+1] = pix.rgb.g;
-            sett->vission[4*(ray_kol.x*i+j)+2] = pix.rgb.b;
-            if(i==399) {conture[j+1].position = {pos.x+pix.dist*rays[i][j].x, pos.y+pix.dist*rays[i][j].y};}
         }
+    };
+    std::vector<std::thread> th;
+    for (int i = 0; i < sett->thp; i++)
+    {
+        th.push_back(std::thread(func, i*ray_kol.x/sett->thp, (i+1)*ray_kol.x/sett->thp));
     }
+	for (int i = 0; i < sett->thp; i++) {th[i].join();}
 }

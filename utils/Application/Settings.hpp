@@ -30,6 +30,7 @@ public:
 
     int W = 1200;
     int H = 800;
+    int thp = 6;
     sf::Vector2i discr = {1200, 800};
     float rast =30.f;
     float len = 1500.f;
