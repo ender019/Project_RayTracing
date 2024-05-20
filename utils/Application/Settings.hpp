@@ -32,13 +32,14 @@ public:
     int H = 800;
     int thp = 6;
     sf::Vector2i discr = {1200, 800};
-    float rast =30.f;
+    float rast =1.f;
     float len = 1500.f;
-    sf::Vector2f vis = {60.f, 40.f};
+    sf::Vector2f vis = {74.f, 40.f};
     float size = 3.f;
     float scale = 1.f/6.f;
     sf::Vector3f light = {1, 1, -1};
-    std::vector<sf::Uint8> vission;
+    int geom_kol = 5;
+	float geom[5]={0, 0, 0, 0, 0};
     
     Settings(Settings const&) = delete;
     Settings& operator=(Settings const&) = delete;

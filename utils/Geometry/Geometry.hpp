@@ -14,6 +14,7 @@ protected:
 public:
     GeomObject(sf::Vector3f pos_, sf::Color rgb_);
 
+    virtual void push(std::vector<std::vector<float>>& shd_geom) = 0;
     virtual void scale(GeomObject*& c) = 0;
     virtual std::vector<sf::Vector3f> collision(sf::Vector3f pls) = 0;
     virtual Settings::vis_point intersect(sf::Vector3f rp, sf::Vector3f rv) = 0;
@@ -29,6 +30,7 @@ protected:
 public:
     SphearObj(sf::Vector3f _pos, float _r);
 
+    virtual void push(std::vector<std::vector<float>>& shd_geom);
     virtual void scale(GeomObject*& c);
     virtual std::vector<sf::Vector3f> collision(sf::Vector3f pls);
     virtual Settings::vis_point intersect(sf::Vector3f rp, sf::Vector3f rv);
@@ -46,6 +48,7 @@ public:
     LineObj(sf::Vector3f _a, sf::Vector3f _b);
     LineObj(float _x1, float _y1, float _z1, float _x2, float _y2, float _z2);
 
+    virtual void push(std::vector<std::vector<float>>& shd_geom);
     virtual void scale(GeomObject*& c);
     virtual std::vector<sf::Vector3f> collision(sf::Vector3f pls);
     virtual Settings::vis_point intersect(sf::Vector3f rp, sf::Vector3f rv);
@@ -62,6 +65,7 @@ protected:
 public:
     BoxObj(sf::Vector3f _pos, sf::Vector3f _s, sf::Vector3f _al={0, 0, 0});
 
+    virtual void push(std::vector<std::vector<float>>& shd_geom);
     virtual void scale(GeomObject*& c);
     virtual std::vector<sf::Vector3f> collision(sf::Vector3f pls);
     virtual Settings::vis_point intersect(sf::Vector3f rp, sf::Vector3f rv);
@@ -78,6 +82,7 @@ protected:
 public:
     PlaneObj(sf::Vector3f _pos, sf::Vector3f _k);
 
+    virtual void push(std::vector<std::vector<float>>& shd_geom);
     virtual void scale(GeomObject*& c);
     virtual std::vector<sf::Vector3f> collision(sf::Vector3f pls);
     virtual Settings::vis_point intersect(sf::Vector3f rp, sf::Vector3f rv);
@@ -94,6 +99,7 @@ protected:
 public:
     RectObj(sf::Vector3f _pos, sf::Vector3f _s, sf::Vector3f _al={0, 0, 0});
 
+    virtual void push(std::vector<std::vector<float>>& shd_geom);
     virtual void scale(GeomObject*& c);
     virtual std::vector<sf::Vector3f> collision(sf::Vector3f pls);
     virtual Settings::vis_point intersect(sf::Vector3f rp, sf::Vector3f rv);

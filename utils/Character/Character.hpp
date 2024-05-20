@@ -11,8 +11,9 @@ private:
     sf::Vector3f pos;
     sf::Vector3f nal;
     float size;
-    float feeling = 0.5f;
+    float feeling = 1.5f;
     sf::Vector2i ray_kol;
+    std::vector<std::vector<float>> shd_geom;
 
     friend class Map;
 
@@ -23,7 +24,9 @@ protected:
 public:
     Character(sf::Vector3f _pos, sf::Vector3f _nal ={0,0,0});
 
+    void init(std::vector<GeomObject*> objects);
     void rotate(sf::Vector3f w);
     void move(std::vector<GeomObject*> objects, sf::Vector3f p);
-    void tracing(std::vector<GeomObject*> objects);
+    void scan(std::vector<GeomObject*> objects);
+    void tracing(sf::Shader& shader);
 };

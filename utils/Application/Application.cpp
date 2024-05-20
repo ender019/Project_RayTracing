@@ -5,18 +5,26 @@ void Screen::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     states.transform *= getTransform();
     states.texture = NULL;
-    target.draw(obj);
+    target.draw(obj, &shd);
 }
 
 Screen::Screen(): kol(sett->discr)
 {
     tex.create(sett->discr.x, sett->discr.y); 
     obj.setTexture(tex);
+    shd.loadFromFile("tracing.frag", sf::Shader::Fragment); // load the shader
+	if (!shd.isAvailable()) {
+		std::cout << "The shader is not available\n";
+	}
+	shd.setUniform("resolution", sf::Vector2f(sett->discr));
+	shd.setUniform("focus", sett->rast);
+	shd.setUniform("len", sett->len);
+	shd.setUniform("light", sett->light);
 }
-    
-void Screen::update()
+
+sf::Shader& Screen::get()
 {
-    tex.update(sett->vission.data());
+    return shd;
 }
 
 
@@ -31,7 +39,7 @@ App::App():
     objects.push_back(new SphearObj(sf::Vector3f(600, 250, 30), 35));
     objects.push_back(new SphearObj(sf::Vector3f(750,200, 40), 50));
     objects.push_back(new RectObj({780, 350, 30}, {50, 50, 50}));
-    // objects.push_back(new RectObj(sf::Vector2f(580,480), 50, 30, 45));
+    objects.push_back(new RectObj({700, 250, 130}, {30, 50, 10}));
     // objects.push_back(new LineObj(100,100,900,300));
     // objects.push_back(new LineObj(sf::Vector2f(650,150), 620, 120));
     // objects.push_back(new LineObj(sf::Vector2f(340,655), 450, -30));
@@ -43,6 +51,7 @@ App::App():
     // objects.push_back(new BoxObj(sf::Vector2f(560,350), 140, 40, 30));
     // objects.push_back(new BoxObj(sf::Vector2f(sett->W/2,sett->H/2), sett->W-20, sett->H-20));
     map.reload(objects);
+    camera.init(objects);
 }
 
 void App::run()
@@ -63,9 +72,8 @@ void App::run()
         sf::Mouse::setPosition(sf::Vector2i(sett->W/2, sett->H/2), window);
         camera.rotate({0,dx.y*elapsed.asSeconds(),dx.x*elapsed.asSeconds()});
         window.clear(sf::Color::White);
-
-        camera.tracing(objects);
-        screen.update();
+        camera.tracing(screen.get());
+        camera.scan(objects);
         map.update(camera);
 
         window.draw(screen);

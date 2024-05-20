@@ -10,6 +10,17 @@ void SphearObj::draw(sf::RenderTarget& target, sf::RenderStates states) const
     target.draw(obj, states);
 }
 
+void SphearObj::push(std::vector<std::vector<float>>& shd_geom)
+{
+    shd_geom[0].push_back(pos.x);
+    shd_geom[0].push_back(pos.y);
+    shd_geom[0].push_back(pos.z);
+    shd_geom[0].push_back(r);
+    shd_geom[0].push_back(rgb.r);
+    shd_geom[0].push_back(rgb.g);
+    shd_geom[0].push_back(rgb.b);
+    sett->geom[0]++;
+}
 void SphearObj::scale(GeomObject*& c)
 {
     c = new SphearObj(sett->scale*pos, sett->scale*r);
@@ -46,6 +57,17 @@ void LineObj::draw(sf::RenderTarget& target, sf::RenderStates states) const
     target.draw(obj, 2, sf::Lines, states);
 }
 
+void LineObj::push(std::vector<std::vector<float>>& shd_geom)
+{
+    shd_geom[1].push_back(pos.x);
+    shd_geom[1].push_back(pos.y);
+    shd_geom[1].push_back(pos.z);
+    shd_geom[1].push_back(a.x);
+    shd_geom[1].push_back(rgb.r);
+    shd_geom[1].push_back(rgb.g);
+    shd_geom[1].push_back(rgb.b);
+    sett->geom[1]++;
+}
 LineObj::LineObj(float x1_, float y1_, float z1_, float x2_, float y2_, float z2_): 
     GeomObject(sf::Vector3f(x1_, y1_, z1_), sf::Color(220,220,0)), 
     a(x1_, y1_, z1_), b(x2_, y2_, z2_)
@@ -105,6 +127,19 @@ BoxObj::BoxObj(sf::Vector3f _pos, sf::Vector3f _s, sf::Vector3f _al): GeomObject
     obj.push_back(LineObj(sett->trans(pos, pos-(0.5f*s), al), sett->trans(pos, pos+(0.5f*s), al)));
 }
 
+void BoxObj::push(std::vector<std::vector<float>>& shd_geom)
+{
+    shd_geom[2].push_back(pos.x);
+    shd_geom[2].push_back(pos.y);
+    shd_geom[2].push_back(pos.z);
+    shd_geom[2].push_back(s.x);
+    shd_geom[2].push_back(s.y);
+    shd_geom[2].push_back(s.z);
+    shd_geom[2].push_back(rgb.r);
+    shd_geom[2].push_back(rgb.g);
+    shd_geom[2].push_back(rgb.b);
+    sett->geom[2]++;
+}
 void BoxObj::scale(GeomObject*& C)
 {
     C = new BoxObj(sett->scale*pos, sett->scale*s, al);
@@ -143,7 +178,17 @@ PlaneObj::PlaneObj(sf::Vector3f _pos, sf::Vector3f _k):
 {
     obj.setFillColor(rgb);
 }
-
+void PlaneObj::push(std::vector<std::vector<float>>& shd_geom)
+{
+    shd_geom[3].push_back(nr.x);
+    shd_geom[3].push_back(nr.y);
+    shd_geom[3].push_back(nr.z);
+    shd_geom[3].push_back(d);
+    shd_geom[3].push_back(rgb.r);
+    shd_geom[3].push_back(rgb.g);
+    shd_geom[3].push_back(rgb.b);
+    sett->geom[3]++;
+}
 void PlaneObj::scale(GeomObject*& C)
 {
     C = new PlaneObj(sett->scale*pos, nr);
@@ -189,6 +234,19 @@ RectObj::RectObj(sf::Vector3f _pos, sf::Vector3f _s, sf::Vector3f _al): GeomObje
     obj.setFillColor(rgb);
 }
 
+void RectObj::push(std::vector<std::vector<float>>& shd_geom)
+{
+    shd_geom[4].push_back(pos.x);
+    shd_geom[4].push_back(pos.y);
+    shd_geom[4].push_back(pos.z);
+    shd_geom[4].push_back(s.x);
+    shd_geom[4].push_back(s.y);
+    shd_geom[4].push_back(s.z);
+    shd_geom[4].push_back(rgb.r);
+    shd_geom[4].push_back(rgb.g);
+    shd_geom[4].push_back(rgb.b);
+    sett->geom[4]++;
+}
 void RectObj::scale(GeomObject*& C)
 {
     C = new RectObj(sett->scale*pos, sett->scale*s, al);

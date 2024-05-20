@@ -7,13 +7,13 @@ class Screen : public sf::Drawable, public sf::Transformable
 private:
     sf::Texture tex;
     sf::Sprite obj;
+    sf::Shader shd;
     sf::Vector2i kol;
 private:
     void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 public:
     Screen();
-
-    void update();
+    sf::Shader& get();
 };
 
 
