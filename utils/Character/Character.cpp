@@ -46,18 +46,19 @@ void Character::move(std::vector<GeomObject*> objects, sf::Vector3f p)
     sf::Vector3f vec = {2,0,0}, d_v = {0, 0, 0};
     std::vector<sf::Vector3f> n;
     rot(vec, nal+p);
-    // sf::Vector3f l=vec, r=vec;
-    // for (int i = 0; i < objects.size(); i++)
-    // {
-    //     n = objects[i]->collision(pos);
-    //     for (int j = 0; j < n.size(); j++)
-    //     {
-    //         if(sett->dot(vec, n[j])<sett->dot(vec, r) && sett->dat(vec, n[j])>0) {r = n[j];}
-    //         if(sett->dot(vec, n[j])<sett->dot(vec, l) && sett->dat(vec, n[j])<0) {l = n[j];}
-    //     }
-    // }
+    sf::Vector3f l=vec, r=vec;
+    for (int i = 0; i < objects.size(); i++)
+    {
+        n = objects[i]->collision(pos);
+        for (int j = 0; j < n.size(); j++)
+        {
+            // if(sett->dot(vec, n[j])<sett->dot(vec, r) && sett->dat(vec, n[j])>0) {r = n[j];}
+            // if(sett->dot(vec, n[j])<sett->dot(vec, l) && sett->dat(vec, n[j])<0) {l = n[j];}
+            d_v = sett->dot(vec, n[j])*n[j];
+        }
+    }
     // if(sett->dot(-vec, r+l) > abs(sett->dot(l, r+l))) {d_v = vec;}
-    // else if(sett->dot(vec, r)<0) {d_v = sett->dot(vec, r)*r;}
+    // else if(sett->dot(vec, r)<0) {r;}
     // else if(sett->dot(vec, l)<0) {d_v = sett->dot(vec, l)*l;}
     // std::cout<<vec.x<<' '<<vec.y<<' '<<vec.z<<"\n";
     // std::cout<<nal.x<<' '<<nal.y<<' '<<nal.z<<"\n";

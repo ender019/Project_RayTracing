@@ -4,6 +4,7 @@
 #define lt4 7
 #define lt5 9
 #define PI 3.14159265359
+#define dp 0.002
 
 uniform vec2 resolution;
 uniform vec3 light;
@@ -57,43 +58,58 @@ float plnIntersect( in vec3 ro, in vec3 rd, in vec4 p, out vec3 oN)
     return l;
 }
 
-vec4 raycast(vec3 rp, vec3 rd, float dst)
+vec4 raycast(vec3 rp, vec3 rd, float dst, out vec3 nv)
 {
     vec3 col = vec3(0.7,0.7,1);
-    vec3 oN, nv;
+    vec3 oN;
+    vec3 sun = vec3(0.3)*dot(rd, light);
     float dh = 0;
     for(int i=0; i<geom[0]; i++)
     {
         dh = sphIntersect(rp-vec3(sphears[lt1*i+0],sphears[lt1*i+1],sphears[lt1*i+2]), rd, sphears[lt1*i+3], oN);
-        if(0<dh && dh<dst) {dst=dh; nv=oN; col = vec3(sphears[lt1*i+4],sphears[lt1*i+5],sphears[lt1*i+6])/255;}
+        if(0<dh && dh<dst) 
+        {
+            dst=dh; nv=oN; col = vec3(sphears[lt1*i+4],sphears[lt1*i+5],sphears[lt1*i+6])/255;
+        }
     }
     for(int i=0; i<geom[3]; i++)
     {
         dh = plnIntersect(rp, rd, vec4(planes[lt4*i+0],planes[lt4*i+1],planes[lt4*i+2], planes[lt4*i+3]), oN);
-        if(0<dh && dh<dst) {dst=dh; nv=oN; col = vec3(planes[lt4*i+4],planes[lt4*i+5],planes[lt4*i+6])/255;}
+        if(0<dh && dh<dst) 
+        {
+            dst=dh; nv=oN; col = vec3(planes[lt4*i+4],planes[lt4*i+5],planes[lt4*i+6])/255;
+        }
     }
     for(int i=0; i<geom[4]; i++)
     {
         dh = cubIntersect(rp-vec3(cubes[lt5*i+0],cubes[lt5*i+1],cubes[lt5*i+2]), rd, vec3(cubes[lt5*i+3],cubes[lt5*i+4],cubes[lt5*i+5])/2, oN);
-        if(0<dh && dh<dst) {dst=dh; nv=oN; col = vec3(cubes[lt5*i+6],cubes[lt5*i+7],cubes[lt5*i+8])/255;}
+        if(0<dh && dh<dst) 
+        {
+            dst=dh; nv=oN; col = vec3(cubes[lt5*i+6],cubes[lt5*i+7],cubes[lt5*i+8])/255;
+        }
     }
-    // if(dst<len) col*=0.5-0.5*dot(nv,light);
-    // vec3 pnt = rp+rv*dh;1-dst/(len+400.0)
-    // if(sphears[0]==600.f) col=vec3(0);
-    return vec4(col, dst-0.1);
+    return vec4(col, dst-dp);
 }
 
 vec3 raytrace(vec3 rp, vec3 rd)
 {
     vec3 col = vec3(0);
     vec4 ex = vec4(0);
+    vec3 nv = vec3(0);
     vec3 sun = vec3(1)*max(0.0, pow(dot(-rd, light), 200.0));
-    ex = raycast(rp, rd, len);
+    ex = raycast(rp, rd, len, nv);
     col = ex.xyz;
-    if(ex.w==len-0.1) return clamp(col+sun, 0.0, 1.0);
+    if(ex.w==len-dp) return clamp(col+sun, 0.0, 1.0);
     rp += ex.w*rd; 
-    ex = raycast(rp, -light, len);
-    if(ex.w<len-0.1) col *= 0.5*(1+ex.w/len);
+    ex = raycast(rp, -light, len, sun);
+    
+    if(ex.w<=0.1) col *= clamp(pow(1-max(dot(nv, light), 0.0), 2), 0.0, 1.0);
+    else if(ex.w<len-dp) col *= pow((ex.w/len), 0.2);
+    else 
+    {
+        col = col*(1+0.3*pow(dot(-rd, reflect(light, nv)), 1.0));
+        col = clamp(col+vec3(0.15)*max(0.0, pow(dot(-rd, reflect(light, nv)), 50.0)), 0.0, 1.0);
+    }
     return col;
 }
 
