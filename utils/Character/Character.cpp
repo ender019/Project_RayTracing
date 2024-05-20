@@ -16,8 +16,8 @@ void Character::draw(sf::RenderTarget& target, sf::RenderStates states) const
 }
 
 Character::Character(sf::Vector3f _pos, sf::Vector3f _nal): 
-    camera(3.f), conture(sf::LineStrip, sett->discr.x+2), rays(sett->discr.y, std::vector<sf::Vector3f>(sett->discr.x, {1,0,0})),
-    pos(_pos), ray_kol(sett->discr), size(sett->size), nal(_nal), shd_geom(sett->geom_kol)
+    camera(3.f), conture(sf::LineStrip, sett->W+2), rays(sett->H, std::vector<sf::Vector3f>(sett->W, {1,0,0})),
+    pos(_pos), ray_kol(sf::Vector2i(sett->W, sett->H)), size(sett->size), nal(_nal), shd_geom(sett->geom_kol)
 {
     camera.setFillColor(sf::Color::Black);
     camera.move({pos.x-size, pos.y-size}); 
@@ -71,12 +71,12 @@ void Character::scan(std::vector<GeomObject*> objects)
 {
     SET::vis_point ox;
     float pix;
-    for (int i = 0; i < sett->discr.x; i++)
+    for (int i = 0; i < sett->W; i++)
     {
         pix=sett->len;
-        if (rays[399][i].y>0) pix=std::min((sett->discr.y-pos.y)/rays[399][i].y, pix);
+        if (rays[399][i].y>0) pix=std::min((sett->H-pos.y)/rays[399][i].y, pix);
         if (rays[399][i].y<0) pix=std::min(-pos.y/rays[399][i].y, pix);
-        if (rays[399][i].x>0) pix=std::min((sett->discr.x-pos.x)/rays[399][i].x, pix);
+        if (rays[399][i].x>0) pix=std::min((sett->W-pos.x)/rays[399][i].x, pix);
         if (rays[399][i].x<0) pix=std::min(-pos.x/rays[399][i].x, pix);
         for (int j = 0; j < objects.size(); j++)
         {

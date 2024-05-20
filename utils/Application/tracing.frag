@@ -36,15 +36,15 @@ float sphIntersect(in vec3 ro, in vec3 rd, float ra, out vec3 oN) {
 
 float cubIntersect( in vec3 ro, in vec3 rd, vec3 boxSize, out vec3 oN) 
 {
-    vec3 m = 1.0/rd; // can precompute if traversing a set of aligned boxes
-    vec3 n = m*ro;   // can precompute if traversing a set of aligned boxes
+    vec3 m = 1.0/rd; 
+    vec3 n = m*ro;   
     vec3 k = abs(m)*boxSize;
     vec3 t1 = -n - k;
     vec3 t2 = -n + k;
     float tN = max( max( t1.x, t1.y ), t1.z );
     float tF = min( min( t2.x, t2.y ), t2.z );
-    if( tN>tF || tF<0.0) return len; // no intersection
-    oN = (tN>0.0) ? step(vec3(tN),t1) : step(t2,vec3(tF));  // ro inside the box
+    if( tN>tF || tF<0.0) return len;
+    oN = (tN>0.0) ? step(vec3(tN),t1) : step(t2,vec3(tF));
     oN *= -sign(rd);
     return min( tN, tF );
 }
@@ -105,5 +105,6 @@ void main()
     vec3 rd = normalize(rp);
     rp+=pos; rot(rd, nal);
     vec3 col = raytrace(rp, rd);
+    col = vec3(pow(col.x, 1/2.2), pow(col.y, 1/2.2), pow(col.z, 1/2.2));
     gl_FragColor = vec4(col, 1.0);
 }

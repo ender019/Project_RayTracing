@@ -24,7 +24,10 @@ sf::Vector3f Settings::trans(sf::Vector3f al, sf::Vector3f a, sf::Vector3f o)
 }
 
 
-Settings::Settings() {light = ort(light);}
+Settings::Settings() 
+{
+    light = ort(light);
+}
 
 Settings* Settings::get() {
     if (!settings) {settings = new Settings();}

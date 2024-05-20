@@ -31,7 +31,6 @@ public:
     int W = 1200;
     int H = 800;
     int thp = 6;
-    sf::Vector2i discr = {1200, 800};
     float rast =1.f;
     float len = 1500.f;
     sf::Vector2f vis = {74.f, 40.f};

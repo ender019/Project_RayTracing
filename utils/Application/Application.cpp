@@ -8,15 +8,15 @@ void Screen::draw(sf::RenderTarget& target, sf::RenderStates states) const
     target.draw(obj, &shd);
 }
 
-Screen::Screen(): kol(sett->discr)
+Screen::Screen()
 {
-    tex.create(sett->discr.x, sett->discr.y); 
+    tex.create(sett->W, sett->H); 
     obj.setTexture(tex);
     shd.loadFromFile("tracing.frag", sf::Shader::Fragment); // load the shader
 	if (!shd.isAvailable()) {
 		std::cout << "The shader is not available\n";
 	}
-	shd.setUniform("resolution", sf::Vector2f(sett->discr));
+	shd.setUniform("resolution", sf::Vector2f(sett->W, sett->H));
 	shd.setUniform("focus", sett->rast);
 	shd.setUniform("len", sett->len);
 	shd.setUniform("light", sett->light);
