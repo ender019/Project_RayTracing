@@ -1,10 +1,10 @@
 #version 130
 
-#define lt1 7
-#define lt4 7
-#define lt5 9
+#define lt1 10
+#define lt4 10
+#define lt5 12
 #define PI 3.14159265359
-#define dp 0.002
+#define dp 0.0001
 
 uniform vec2 resolution;
 uniform vec3 light;
@@ -17,6 +17,15 @@ uniform float sphears[lt1*2];
 uniform float planes[lt4*1];
 uniform float cubes[lt5*2];
 
+vec3 get_col(int[2] p)
+{
+    vec3 col = vec3(0.7,0.7,1);
+    if(p[0]==0) col = vec3(sphears[lt1*p[1]+4],sphears[lt1*p[1]+5],sphears[lt1*p[1]+6])*sphears[lt1*p[1]+7]/255;
+    if(p[0]==3) col = vec3(planes[lt4*p[1]+4],planes[lt4*p[1]+5],planes[lt4*p[1]+6])*planes[lt4*p[1]+7]/255;
+    if(p[0]==4) col = vec3(cubes[lt5*p[1]+6],cubes[lt5*p[1]+7],cubes[lt5*p[1]+8])*cubes[lt5*p[1]+9]/255;
+    return col;
+}
+
 vec3 rot(inout vec3 a, vec3 al)
 {
     al.z = PI*al.z/180;    al.y = PI*al.y/180;
@@ -25,7 +34,9 @@ vec3 rot(inout vec3 a, vec3 al)
     return a;
 }
 
-float sphIntersect(in vec3 ro, in vec3 rd, float ra, out vec3 oN) {
+float sphIntersect(in vec3 ro, in vec3 rd, float ra, out vec3 oN) 
+{
+    if(dot(ro,ro)<ra*ra) {oN = normalize(ro); return dot(oN,light)>0 ? 0.0 : -1.0;}
 	float b = dot(ro, rd);
 	float c = dot(ro, ro) - ra * ra;
 	float h = b * b - c;
@@ -58,58 +69,65 @@ float plnIntersect( in vec3 ro, in vec3 rd, in vec4 p, out vec3 oN)
     return l;
 }
 
-vec4 raycast(vec3 rp, vec3 rd, float dst, out vec3 nv)
+int[2] raycast(vec3 rp, vec3 rd, inout float dst, out vec3 nv)
 {
-    vec3 col = vec3(0.7,0.7,1);
+    int[2] res; res[0]=-1; res[1]=0;
     vec3 oN;
     vec3 sun = vec3(0.3)*dot(rd, light);
     float dh = 0;
     for(int i=0; i<geom[0]; i++)
     {
         dh = sphIntersect(rp-vec3(sphears[lt1*i+0],sphears[lt1*i+1],sphears[lt1*i+2]), rd, sphears[lt1*i+3], oN);
-        if(0<dh && dh<dst) 
+        if(0<=dh && dh<dst) 
         {
-            dst=dh; nv=oN; col = vec3(sphears[lt1*i+4],sphears[lt1*i+5],sphears[lt1*i+6])/255;
+            dst=dh; nv=oN; res[0]=0; res[1]=i;
         }
     }
     for(int i=0; i<geom[3]; i++)
     {
         dh = plnIntersect(rp, rd, vec4(planes[lt4*i+0],planes[lt4*i+1],planes[lt4*i+2], planes[lt4*i+3]), oN);
-        if(0<dh && dh<dst) 
+        if(0<=dh && dh<dst) 
         {
-            dst=dh; nv=oN; col = vec3(planes[lt4*i+4],planes[lt4*i+5],planes[lt4*i+6])/255;
+            dst=dh; nv=oN; res[0]=3; res[1]=i;
         }
     }
     for(int i=0; i<geom[4]; i++)
     {
         dh = cubIntersect(rp-vec3(cubes[lt5*i+0],cubes[lt5*i+1],cubes[lt5*i+2]), rd, vec3(cubes[lt5*i+3],cubes[lt5*i+4],cubes[lt5*i+5])/2, oN);
-        if(0<dh && dh<dst) 
+        if(0<=dh && dh<dst) 
         {
-            dst=dh; nv=oN; col = vec3(cubes[lt5*i+6],cubes[lt5*i+7],cubes[lt5*i+8])/255;
+            dst=dh; nv=oN; res[0]=4; res[1]=i;
         }
     }
-    return vec4(col, dst-dp);
+    return res;
+}
+
+void rastor( float dst, vec3 rd, vec3 nv, int exl[2], int ext[2], inout vec3 col)
+{
+    if(exl[0] == ext[0] && exl[1] == ext[1]) col *= clamp(pow(1-dot(nv, light), 2), 0.0, 1.0);
+    else if(ext[0]>-1) col *= pow((dst/len), 0.2);
+    else 
+    {
+        col = col*1; //(1+0.3*pow(dot(-rd, reflect(light, nv)), 1.0))
+        col = clamp(col+vec3(0.15)*max(0.0, pow(dot(-rd, reflect(light, nv)), 50.0)), 0.0, 1.0);
+    }
 }
 
 vec3 raytrace(vec3 rp, vec3 rd)
 {
     vec3 col = vec3(0);
-    vec4 ex = vec4(0);
+    int[2] exl;
+    int[2] ext;
     vec3 nv = vec3(0);
     vec3 sun = vec3(1)*max(0.0, pow(dot(-rd, light), 200.0));
-    ex = raycast(rp, rd, len, nv);
-    col = ex.xyz;
-    if(ex.w==len-dp) return clamp(col+sun, 0.0, 1.0);
-    rp += ex.w*rd; 
-    ex = raycast(rp, -light, len, sun);
-    
-    if(ex.w<=0.1) col *= clamp(pow(1-max(dot(nv, light), 0.0), 2), 0.0, 1.0);
-    else if(ex.w<len-dp) col *= pow((ex.w/len), 0.2);
-    else 
-    {
-        col = col*(1+0.3*pow(dot(-rd, reflect(light, nv)), 1.0));
-        col = clamp(col+vec3(0.15)*max(0.0, pow(dot(-rd, reflect(light, nv)), 50.0)), 0.0, 1.0);
-    }
+    float dst = len;
+    exl = raycast(rp, rd, dst, nv);
+    col = get_col(exl);
+    if(dst==len) return clamp(col+sun, 0.0, 1.0);
+    rp += (dst-dp)*rd;dst = len; //rd = reflect(rd, nv); 
+
+    ext = raycast(rp, -light, dst, sun);
+    rastor(dst, rd, nv, exl, ext, col);
     return col;
 }
 
@@ -122,5 +140,6 @@ void main()
     rp+=pos; rot(rd, nal);
     vec3 col = raytrace(rp, rd);
     col = vec3(pow(col.x, 1/2.2), pow(col.y, 1/2.2), pow(col.z, 1/2.2));
+    // if(planes[7]==1.0) col=vec3(1);
     gl_FragColor = vec4(col, 1.0);
 }

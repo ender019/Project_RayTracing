@@ -25,12 +25,10 @@ private:
     sf::Vector3f cam_pos;
     FPS counter;
     Character camera;
-    std::vector<GeomObject*> objects;
     Screen screen;
     Map map;
     
 public:
     App();
     void run();
-    ~App();
 };

@@ -37,8 +37,6 @@ public:
     float size = 3.f;
     float scale = 1.f/6.f;
     sf::Vector3f light = {1, 1, -1};
-    int geom_kol = 5;
-	float geom[5]={0, 0, 0, 0, 0};
     
     Settings(Settings const&) = delete;
     Settings& operator=(Settings const&) = delete;
