@@ -5,28 +5,22 @@
 class GeomObject : public sf::Drawable, public sf::Transformable
 {
 protected:
-    sf::Vector2f pos;
+    sf::Vector3f pos;
     sf::Color rgb;
+    sf::Vector3f mat; // коэффициенты отражения поглощения пропускания 
 
 protected: 
-    float mod(sf::Vector2f pos);
-    sf::Vector2f ort(sf::Vector2f pos);
-    sf::Vector2f norm(sf::Vector2f pos);
-    float dot(sf::Vector2f a, sf::Vector2f b);
-    float dat(sf::Vector2f a, sf::Vector2f b);
-    bool lin(sf::Vector2f a, sf::Vector2f b, sf::Vector2f x);
-    sf::Vector2f trans(sf::Vector2f o, sf::Vector2f a, float al);
 
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const = 0;
 public:
-    GeomObject(sf::Vector2f pos_, sf::Color rgb_);
+    GeomObject(sf::Vector3f _pos, sf::Color _rgb, sf::Vector3f _mat);
 
-    virtual void scale(GeomObject*& c) = 0;
-    virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls) = 0;
-    virtual Settings::vis_point intersect(sf::Vector2f rp, sf::Vector2f rv) = 0;
+    virtual void push(std::vector<float>& shd_geom) = 0;
+    virtual std::vector<sf::Vector3f> collision(sf::Vector3f pls) = 0;
+    virtual float intersect(sf::Vector3f rp, sf::Vector3f rv) = 0;
 };
 
-class CircleObj : public GeomObject
+class SphearObj : public GeomObject
 {
 protected:
     sf::CircleShape obj;
@@ -34,60 +28,97 @@ protected:
 protected: 
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 public:
-    CircleObj(sf::Vector2f pos_, float r_);
+    SphearObj(sf::Vector3f _pos, float _r, sf::Vector3f _mat);
 
-    virtual void scale(GeomObject*& c);
-    virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls);
-    virtual Settings::vis_point intersect(sf::Vector2f rp, sf::Vector2f rv);
+    virtual void push(std::vector<float>& shd_geom);
+    virtual std::vector<sf::Vector3f> collision(sf::Vector3f pls);
+    virtual float intersect(sf::Vector3f rp, sf::Vector3f rv);
 };
 
 class LineObj : public GeomObject
 {
 protected:
     sf::Vertex obj[2];
-    float a1, b1;
-    float a2, b2;
+    sf::Vector3f a,b;
 protected:
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 public:
-    LineObj(sf::Vector2f pos_, float l, float al = 0);
-    LineObj(float a1_, float b1_, float a2_, float b2_);
+    LineObj(sf::Vector3f _pos, float l, sf::Vector3f al={0,0,0}, sf::Vector3f _mat={1.f,0.f,0.f});
+    LineObj(sf::Vector3f _a, sf::Vector3f _b, sf::Vector3f _mat);
+    LineObj(float _x1, float _y1, float _z1, float _x2, float _y2, float _z2, sf::Vector3f _mat);
 
-    virtual void scale(GeomObject*& c);
-    virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls);
-    virtual Settings::vis_point intersect(sf::Vector2f rp, sf::Vector2f rv);
+    virtual void push(std::vector<float>& shd_geom);
+    virtual std::vector<sf::Vector3f> collision(sf::Vector3f pls);
+    virtual float intersect(sf::Vector3f rp, sf::Vector3f rv);
 };
 
 class BoxObj : public GeomObject
 {
 protected:
-    sf::Vertex obj[5];
-    float a;
-    float b;
-    float al;
+    std::vector<LineObj> obj;
+    sf::Vector3f s;
+    sf::Vector3f al;
 protected: 
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 public:
-    BoxObj(sf::Vector2f pos_, float a_, float b_, float al_=0);
+    BoxObj(sf::Vector3f _pos, sf::Vector3f _s, sf::Vector3f _al={0, 0, 0}, sf::Vector3f _mat={1.f,0.f,0.f});
 
-    virtual void scale(GeomObject*& c);
-    virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls);
-    virtual Settings::vis_point intersect(sf::Vector2f rp, sf::Vector2f rv);
+    virtual void push(std::vector<float>& shd_geom);
+    virtual std::vector<sf::Vector3f> collision(sf::Vector3f pls);
+    virtual float intersect(sf::Vector3f rp, sf::Vector3f rv);
 };
 
-class RectObj : public GeomObject
+class PlaneObj : public GeomObject
 {
 protected:
     sf::RectangleShape obj;
-    float a;
-    float b;
-    float al;
+    sf::Vector3f nr;
+    float d;
 protected: 
     virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
 public:
-    RectObj(sf::Vector2f pos_, float a_, float b_, float al_=0);
+    PlaneObj(sf::Vector3f _pos, sf::Vector3f _k, sf::Vector3f _mat);
 
-    virtual void scale(GeomObject*& c);
-    virtual std::vector<sf::Vector2f> collision(sf::Vector2f pls);
-    virtual Settings::vis_point intersect(sf::Vector2f rp, sf::Vector2f rv);
+    virtual void push(std::vector<float>& shd_geom);
+    virtual std::vector<sf::Vector3f> collision(sf::Vector3f pls);
+    virtual float intersect(sf::Vector3f rp, sf::Vector3f rv);
 };
+
+class CubeObj : public GeomObject
+{
+protected:
+    sf::RectangleShape obj;
+    sf::Vector3f s;
+    sf::Vector3f al;
+protected: 
+    virtual void draw(sf::RenderTarget& target, sf::RenderStates states) const;
+public:
+    CubeObj(sf::Vector3f _pos, sf::Vector3f _s, sf::Vector3f _al, sf::Vector3f _mat);
+
+    virtual void push(std::vector<float>& shd_geom);
+    virtual std::vector<sf::Vector3f> collision(sf::Vector3f pls);
+    virtual float intersect(sf::Vector3f rp, sf::Vector3f rv);
+};
+
+
+class ObjBase
+{
+private:
+    int geom_kol = 5;
+	std::vector<float> geom;
+    std::vector<GeomObject*> objects;
+    std::vector<std::vector<float>> cash_geom;
+public:
+    ObjBase();
+    void createSphear(sf::Vector3f _pos, float _r, sf::Vector3f _mat = {1.f, 0.f, 0.f});
+    void createPlane(sf::Vector3f _pos, sf::Vector3f _k, sf::Vector3f _mat = {1.f, 0.f, 0.f});
+    void createCube(sf::Vector3f _pos, sf::Vector3f _s, sf::Vector3f _al={0, 0, 0}, sf::Vector3f _mat = {1.f, 0.f, 0.f});
+    int get_kol();
+    std::vector<float> get_geom();
+    std::vector<float> get_cash(int i);
+    GeomObject* get_obj(int i);
+
+    ~ObjBase();
+};
+
+extern ObjBase base;

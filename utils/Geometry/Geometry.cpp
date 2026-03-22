@@ -1,53 +1,56 @@
 #include "Geometry.hpp"
 
-float GeomObject::mod(sf::Vector2f pos){return std::sqrt(pos.x*pos.x + pos.y*pos.y);}
-sf::Vector2f GeomObject::ort(sf::Vector2f pos){return sf::Vector2f(pos.x/mod(pos), pos.y/mod(pos));}
-sf::Vector2f GeomObject::norm(sf::Vector2f pos){return ort(sf::Vector2f(pos.y, -pos.x));}
-float GeomObject::dot(sf::Vector2f a, sf::Vector2f b) {return a.x*b.x + a.y*b.y;}
-float GeomObject::dat(sf::Vector2f a, sf::Vector2f b) {return a.x*b.y - a.y*b.x;}
-bool GeomObject::lin(sf::Vector2f a, sf::Vector2f b, sf::Vector2f x) {return mod(a-x)+mod(x-b)-mod(a-b)<=0.0001;}
-sf::Vector2f GeomObject::trans(sf::Vector2f o, sf::Vector2f a, float al)
+ObjBase base;
+
+GeomObject::GeomObject(sf::Vector3f _pos, sf::Color _rgb, sf::Vector3f _mat): pos(_pos), rgb(_rgb), mat(_mat)
 {
-    al = M_PI*al/180;
-    return sf::Vector2f(o.x+(a.x-o.x)*std::cos(al)-(a.y-o.y)*std::sin(al), o.y+(a.x-o.x)*std::sin(al)+(a.y-o.y)*std::cos(al));
+    mat/=(mat.x+mat.y+mat.z);
 }
 
-GeomObject::GeomObject(sf::Vector2f pos_, sf::Color rgb_): pos(pos_), rgb(rgb_) {}
 
-
-void CircleObj::draw(sf::RenderTarget& target, sf::RenderStates states) const
+void SphearObj::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     states.transform *= getTransform();
     states.texture = NULL;
     target.draw(obj, states);
 }
 
-void CircleObj::scale(GeomObject*& c)
+void SphearObj::push(std::vector<float>& shd_geom)
 {
-    c = new CircleObj(sett->scale*pos, sett->scale*r);
+    shd_geom.push_back(pos.x);
+    shd_geom.push_back(pos.y);
+    shd_geom.push_back(pos.z);
+    shd_geom.push_back(r);
+    shd_geom.push_back(rgb.r);
+    shd_geom.push_back(rgb.g);
+    shd_geom.push_back(rgb.b);
+    shd_geom.push_back(mat.x);
+    shd_geom.push_back(mat.y);
+    shd_geom.push_back(mat.z);
 }
-CircleObj::CircleObj(sf::Vector2f pos_, float r_): GeomObject(pos_, sf::Color::Blue), r(r_), obj(r_)
+SphearObj::SphearObj(sf::Vector3f _pos, float _r, sf::Vector3f _mat): 
+    GeomObject(_pos, sf::Color(0,0,255), _mat), r(_r), obj(_r*sett->scale)
 {
-    obj.move(sf::Vector2f(pos_.x-r, pos_.y-r));
+    obj.move(sf::Vector2f(_pos.x-r, _pos.y-r)*sett->scale);
     obj.setFillColor(rgb);
 }
-std::vector<sf::Vector2f> CircleObj::collision(sf::Vector2f pls)
+std::vector<sf::Vector3f> SphearObj::collision(sf::Vector3f pls)
 {
-    float d = mod(pls-pos) - r;
+    float d = sett->mod(pls-pos) - r;
     if(d>sett->size) return {};
-    return {ort(pls-pos)};
+    return {sett->ort(pls-pos)};
 }
-Settings::vis_point CircleObj::intersect(sf::Vector2f rp, sf::Vector2f rv)
+float SphearObj::intersect(sf::Vector3f rp, sf::Vector3f rv)
 {
-    sf::Vector2f aov=pos-rp;
-    float ah = dot(aov, rv);
-    float ao = dot(aov,aov);
+    sf::Vector3f aov=pos-rp;
+    float ah = sett->dot(aov, rv);
+    float ao = sett->dot(aov,aov);
     float bh = r*r - ao + ah*ah;
-    if(bh < 0 || ah<0) return {sett->len, rgb};
+    if(bh < 0 || ah<0) return sett->len;
     float h = sqrt(bh);
-    float dc = 100+155*abs(dot(ort(h*rv-aov), rv));
-    // std::cout<<dot(ort(h*rv-aov), rv)<<'\n';
-    return {std::min(ah - h, sett->len), rgb*sf::Color(dc,dc,dc)};
+    float dc = 100+155*abs(sett->dot(sett->ort(sett->light), rv));
+    // std::cout<<ah-h<<'\n';
+    return std::min(ah - h, sett->len); //*sf::Color(dc,dc,dc)
 }
 
 
@@ -58,44 +61,60 @@ void LineObj::draw(sf::RenderTarget& target, sf::RenderStates states) const
     target.draw(obj, 2, sf::Lines, states);
 }
 
-LineObj::LineObj(float a1_, float b1_, float a2_, float b2_): 
-    GeomObject(sf::Vector2f(a1_, b1_), sf::Color(220,220,0)), 
-    a1(a1_), b1(b1_), a2(a2_), b2(b2_)
+LineObj::LineObj(float x1_, float y1_, float z1_, float x2_, float y2_, float z2_, sf::Vector3f _mat): 
+    GeomObject(sf::Vector3f(x1_, y1_, z1_), sf::Color(220,220,0), _mat), 
+    a(x1_, y1_, z1_), b(x2_, y2_, z2_)
 {
-    obj[0] = sf::Vertex (sf::Vector2f(a1, b1), rgb);
-    obj[1] = sf::Vertex (sf::Vector2f(a2, b2), rgb);
+    obj[0] = sf::Vertex(sf::Vector2f(a.x, a.y), rgb);
+    obj[1] = sf::Vertex(sf::Vector2f(b.x, b.y), rgb);
 }
-LineObj::LineObj(sf::Vector2f pos_, float l, float al): 
-    GeomObject(pos_, sf::Color(220,220,0)) 
+LineObj::LineObj(sf::Vector3f _a, sf::Vector3f _b, sf::Vector3f _mat): 
+    GeomObject(a, sf::Color(220,220,0), _mat), 
+    a(_a), b(_b)
 {
-    *this = LineObj(pos_.x, pos_.y, pos_.x + l*std::cos(M_PI*al/180), pos_.y + l*std::sin(M_PI*al/180));
+    obj[0] = sf::Vertex (sf::Vector2f(a.x, a.y), rgb);
+    obj[1] = sf::Vertex (sf::Vector2f(b.x, b.y), rgb);
+}
+LineObj::LineObj(sf::Vector3f _pos, float l, sf::Vector3f al, sf::Vector3f _mat): 
+    GeomObject(a, sf::Color(220,220,0), _mat)
+{
+    *this = LineObj(_pos, _pos + sett->trans(al)*l, _mat);
 }
 
-void LineObj::scale(GeomObject*& c)
+void LineObj::push(std::vector<float>& shd_geom)
 {
-    c = new LineObj(sett->scale*a1, sett->scale*b1, sett->scale*a2, sett->scale*b2);
+    shd_geom.push_back(pos.x);
+    shd_geom.push_back(pos.y);
+    shd_geom.push_back(pos.z);
+    shd_geom.push_back(a.x);
+    shd_geom.push_back(rgb.r);
+    shd_geom.push_back(rgb.g);
+    shd_geom.push_back(rgb.b);
+    shd_geom.push_back(mat.x);
+    shd_geom.push_back(mat.y);
+    shd_geom.push_back(mat.z);
 }
-std::vector<sf::Vector2f> LineObj::collision(sf::Vector2f pls)
+std::vector<sf::Vector3f> LineObj::collision(sf::Vector3f pls)
 {
-    sf::Vector2f v=sf::Vector2f(a2-a1, b2-b1), ax = pls-obj[0].position;
-    float d = dat(ort(v), ax);
-    if(abs(d)>sett->size || mod(ax)>mod(v) || mod(pls-obj[1].position)>mod(v)) return {};
-    sf::Vector2f n=norm(v);
-    return {ort(n * dot(n, ax))};
+    sf::Vector3f v=b-a, ax = pls-a;
+    float d = sett->mod(sett->dat(sett->ort(v), ax));
+    if(abs(d)>sett->size || sett->mod(ax)>sett->mod(v) || sett->mod(pls-b)>sett->mod(v)) return {};
+    sf::Vector3f n=sett->norm(v);
+    return {sett->ort(n * sett->dot(n, ax))};
 }
-Settings::vis_point LineObj::intersect(sf::Vector2f rp, sf::Vector2f rv)
+float LineObj::intersect(sf::Vector3f rp, sf::Vector3f rv)
 {
-    sf::Vector2f v=ort(sf::Vector2f(a2-a1, b2-b1));
-    sf::Vector2f n=norm(v);
-    float pa = dot(n, rv);
-    float h = dat(v, rp-pos);
-    sf::Vector2f x = rp + rv*abs(h/pa);
-    if(lin(sf::Vector2f(a1, b1), sf::Vector2f(a2, b2), x) && sett->len>=abs(h/pa))
+    sf::Vector3f v=sett->ort(b-a);
+    sf::Vector3f n=sett->norm(v);
+    float pa = sett->dot(n, rv);
+    float h = sett->mod(sett->dat(v, rp-pos));
+    sf::Vector3f x = rp + rv*abs(h/pa);
+    if(sett->lin(a, b, x) && sett->len>=abs(h/pa))
     {
         float dc = 155+100*abs(pa); 
-        return {abs(h/pa), rgb*sf::Color(dc,dc,dc)};
+        return abs(h/pa);
     }
-    return {sett->len, rgb};
+    return sett->len;
 }
 
 
@@ -103,113 +122,200 @@ void BoxObj::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     states.transform *= getTransform();
     states.texture = NULL;
-    target.draw(obj, 5, sf::LinesStrip, states);
+    for (int i = 0; i < 12; i++) target.draw(obj[i], states);
 }
-BoxObj::BoxObj(sf::Vector2f pos_, float a_, float b_, float al_): GeomObject(pos_, sf::Color(0,220,220)), a(a_), b(b_), al(al_)
+BoxObj::BoxObj(sf::Vector3f _pos, sf::Vector3f _s, sf::Vector3f _al, sf::Vector3f _mat): 
+    GeomObject(_pos, sf::Color(0,220,220), _mat), s(_s), al(_al)
 {
-    obj[0] = sf::Vertex (trans(pos, sf::Vector2f(pos.x-a/2, pos.y-b/2), al), rgb);
-    obj[1] = sf::Vertex (trans(pos, sf::Vector2f(pos.x+a/2, pos.y-b/2), al), rgb);
-    obj[2] = sf::Vertex (trans(pos, sf::Vector2f(pos.x+a/2, pos.y+b/2), al), rgb);
-    obj[3] = sf::Vertex (trans(pos, sf::Vector2f(pos.x-a/2, pos.y+b/2), al), rgb);
-    obj[4] = sf::Vertex (trans(pos, sf::Vector2f(pos.x-a/2, pos.y-b/2), al), rgb);
+    obj.push_back(LineObj(sett->trans(pos, pos-(0.5f*s), al), sett->trans(pos, pos+(0.5f*s), al), _mat));
 }
 
-void BoxObj::scale(GeomObject*& c)
+void BoxObj::push(std::vector<float>& shd_geom)
 {
-    c = new BoxObj(sett->scale*pos, sett->scale*a, sett->scale*b, al);
+    shd_geom.push_back(pos.x);
+    shd_geom.push_back(pos.y);
+    shd_geom.push_back(pos.z);
+    shd_geom.push_back(s.x);
+    shd_geom.push_back(s.y);
+    shd_geom.push_back(s.z);
+    shd_geom.push_back(rgb.r);
+    shd_geom.push_back(rgb.g);
+    shd_geom.push_back(rgb.b);
+    shd_geom.push_back(mat.x);
+    shd_geom.push_back(mat.y);
+    shd_geom.push_back(mat.z);
 }
-std::vector<sf::Vector2f> BoxObj::collision(sf::Vector2f pls)
+std::vector<sf::Vector3f> BoxObj::collision(sf::Vector3f pls)
 {
-    float d, s;
-    sf::Vector2f ax, v(std::cos(M_PI*al/180), std::sin(M_PI*al/180)), n=norm(v);
-    std::vector<sf::Vector2f> p;
-    for (int i = 0; i < 4; i++)
+    std::vector<sf::Vector3f> p, q;
+    for (int i = 0; i < 12; i++)
     {
-        s = a - (a-b)*(i%2);
-        ax = pls-obj[i].position;
-        d = dat(v, ax);
-        if(!(abs(d)>sett->size || mod(ax)>mod(s*v)+sett->size/3 || mod(pls-obj[i+1].position)>mod(s*v)+sett->size/3)) p.push_back(ort(n * dot(n, ax)));
-        std::swap(v, n); 
+        q=obj[i].collision(pos);
+        for(auto e: q){p.push_back(e);}
     }
     return p;
 }
-Settings::vis_point BoxObj::intersect(sf::Vector2f rp, sf::Vector2f rv)
+float BoxObj::intersect(sf::Vector3f rp, sf::Vector3f rv)
 {
-    float pa, h, dc;
-    Settings::vis_point ox{sett->len, rgb}; 
-    sf::Vector2f o, x, v(std::cos(M_PI*al/180), std::sin(M_PI*al/180)), n=norm(v);
+    float ox = sett->len, ot;
     for (int i = 0; i < 4; i++)
     {
-        o=obj[i].position;
-        pa = dot(n, rv);
-        h = dat(v, rp-o);
-        x = rp + rv*abs(h/pa);
-        if(lin(o, obj[i+1].position, x) && sett->len>=abs(h/pa) && ox.dist>abs(h/pa)) {dc = 155+100*abs(pa); ox={abs(h/pa), rgb*sf::Color(dc,dc,dc)};}
-        std::swap(v, n);
+        ot=obj[i].intersect(rp, rv);
+        ox = std::min(ox,ot);
     }
     return ox;
 }
 
-
-void RectObj::draw(sf::RenderTarget& target, sf::RenderStates states) const
+void PlaneObj::draw(sf::RenderTarget& target, sf::RenderStates states) const
 {
     states.transform *= getTransform();
     states.texture = NULL;
     target.draw(obj, states);
 }
 
-RectObj::RectObj(sf::Vector2f pos_, float a_, float b_, float al_): GeomObject(pos_, sf::Color::Blue), obj(sf::Vector2f(a_, b_)), a(a_), b(b_), al(al_)
+PlaneObj::PlaneObj(sf::Vector3f _pos, sf::Vector3f _k, sf::Vector3f _mat): 
+    GeomObject(_pos, sf::Color(70, 70, 70), _mat), obj({sett->scale*sett->W, sett->scale*sett->H}), 
+    nr(sett->ort(_k)), d(-sett->dot(sett->ort(_k),_pos))
 {
-    obj.move(trans(pos, sf::Vector2f(pos.x-a/2, pos.y-b/2), al));
-    obj.rotate(al);
+    obj.setFillColor(rgb);
+}
+void PlaneObj::push(std::vector<float>& shd_geom)
+{
+    shd_geom.push_back(nr.x);
+    shd_geom.push_back(nr.y);
+    shd_geom.push_back(nr.z);
+    shd_geom.push_back(d);
+    shd_geom.push_back(rgb.r);
+    shd_geom.push_back(rgb.g);
+    shd_geom.push_back(rgb.b);
+    shd_geom.push_back(mat.x);
+    shd_geom.push_back(mat.y);
+    shd_geom.push_back(mat.z);
+}
+std::vector<sf::Vector3f> PlaneObj::collision(sf::Vector3f pls)
+{
+    float h = (sett->dot(nr,pls)+d);
+    if(h>sett->size) return {};
+    return{nr*(1.f-2.f*(h<0))};
+}
+float PlaneObj::intersect(sf::Vector3f rp, sf::Vector3f rv)
+{
+    float ox = sett->len;
+    if(sett->dot(nr,rv)>=0) return ox;
+    float h = abs((sett->dot(nr,rp)+d)/sett->dot(nr,rv));
+    // std::cout<<d<<' '<<h<<' '<<rp.z<<"\n";
+    ox = std::min(h, ox);
+    return ox;
+}
+
+void CubeObj::draw(sf::RenderTarget& target, sf::RenderStates states) const
+{
+    states.transform *= getTransform();
+    states.texture = NULL;
+    target.draw(obj, states);
+}
+
+CubeObj::CubeObj(sf::Vector3f _pos, sf::Vector3f _s, sf::Vector3f _al, sf::Vector3f _mat): 
+    GeomObject(_pos, sf::Color(100, 0, 255), _mat),  s(_s), al(_al), obj({_s.x*sett->scale, _s.y*sett->scale})
+{
+    obj.move(sf::Vector2f(pos.x-s.x/2, pos.y-s.y/2)*sett->scale);
     obj.setFillColor(rgb);
 }
 
-void RectObj::scale(GeomObject*& c)
+void CubeObj::push(std::vector<float>& shd_geom)
 {
-    c = new RectObj(sett->scale*pos, sett->scale*a, sett->scale*b, al);
+    shd_geom.push_back(pos.x);
+    shd_geom.push_back(pos.y);
+    shd_geom.push_back(pos.z);
+    shd_geom.push_back(s.x);
+    shd_geom.push_back(s.y);
+    shd_geom.push_back(s.z);
+    shd_geom.push_back(rgb.r);
+    shd_geom.push_back(rgb.g);
+    shd_geom.push_back(rgb.b);
+    shd_geom.push_back(mat.x);
+    shd_geom.push_back(mat.y);
+    shd_geom.push_back(mat.z);
 }
-std::vector<sf::Vector2f> RectObj::collision(sf::Vector2f pls)
+std::vector<sf::Vector3f> CubeObj::collision(sf::Vector3f pls)
 {
-    sf::Vector2f o1=pls-trans(pos, sf::Vector2f(pos.x-a/2, pos.y-b/2), al);
-    sf::Vector2f o2=pls-trans(pos, sf::Vector2f(pos.x+a/2, pos.y-b/2), al);
-    sf::Vector2f o3=pls-trans(pos, sf::Vector2f(pos.x+a/2, pos.y+b/2), al);
-    sf::Vector2f o4=pls-trans(pos, sf::Vector2f(pos.x-a/2, pos.y+b/2), al);
-    sf::Vector2f v(std::cos(M_PI*al/180), std::sin(M_PI*al/180));
-    sf::Vector2f n=norm(v);
-    float d = dat(v, o1);
-    if(!(abs(d)>sett->size || mod(o1)>mod(a*v)+sett->size/3 || mod(o2)>mod(a*v)+sett->size/3)) return {ort(n * dot(n, o1))};
-    d = dat(n, o2);
-    if(!(abs(d)>sett->size || mod(o2)>mod(b*n)+sett->size/3 || mod(o3)>mod(b*n)+sett->size/3)) return {ort(v * dot(v, o2))};
-    d = dat(v, o3);
-    if(!(abs(d)>sett->size || mod(o3)>mod(a*v)+sett->size/3 || mod(o4)>mod(a*v)+sett->size/3)) return {ort(n * dot(n, o3))};
-    d = dat(n, o4);
-    if(!(abs(d)>sett->size || mod(o4)>mod(b*n)+sett->size/3 || mod(o1)>mod(b*n)+sett->size/3)) return {ort(v * dot(v, o4))};
+    // sf::Vector3f o1=pls-trans(pos, sf::Vector3f(pos.x-a/2, pos.y-b/2), al);
+    // sf::Vector3f o2=pls-trans(pos, sf::Vector3f(pos.x+a/2, pos.y-b/2), al);
+    // sf::Vector3f o3=pls-trans(pos, sf::Vector3f(pos.x+a/2, pos.y+b/2), al);
+    // sf::Vector3f o4=pls-trans(pos, sf::Vector3f(pos.x-a/2, pos.y+b/2), al);
+    // sf::Vector3f v(std::cos(M_PI*al/180), std::sin(M_PI*al/180));
+    // sf::Vector3f n=sett->norm(v);
+    // float d = sett->dat(v, o1);
+    // if(!(abs(d)>sett->size || sett->mod(o1)>sett->mod(a*v)+sett->size/3 || sett->mod(o2)>sett->mod(a*v)+sett->size/3)) return {sett->ort(n * sett->dot(n, o1))};
+    // d = sett->dat(n, o2);
+    // if(!(abs(d)>sett->size || sett->mod(o2)>sett->mod(b*n)+sett->size/3 || sett->mod(o3)>sett->mod(b*n)+sett->size/3)) return {sett->ort(v * sett->dot(v, o2))};
+    // d = sett->dat(v, o3);
+    // if(!(abs(d)>sett->size || sett->mod(o3)>sett->mod(a*v)+sett->size/3 || sett->mod(o4)>sett->mod(a*v)+sett->size/3)) return {sett->ort(n * sett->dot(n, o3))};
+    // d = sett->dat(n, o4);
+    // if(!(abs(d)>sett->size || sett->mod(o4)>sett->mod(b*n)+sett->size/3 || sett->mod(o1)>sett->mod(b*n)+sett->size/3)) return {sett->ort(v * sett->dot(v, o4))};
     return {};
 }
-Settings::vis_point RectObj::intersect(sf::Vector2f rp, sf::Vector2f rv)
+float CubeObj::intersect(sf::Vector3f rp, sf::Vector3f rv)
 {
-    Settings::vis_point ox{sett->len, rgb}; 
-    sf::Vector2f o=trans(pos, sf::Vector2f(pos.x-a/2, pos.y-b/2), al);
-    sf::Vector2f v(std::cos(M_PI*al/180), std::sin(M_PI*al/180));
-    sf::Vector2f n=norm(v);
-    float dc;
-    float pa = dot(n, rv);
-    float h = dat(v, rp-o);
-    sf::Vector2f x = rp + rv*abs(h/pa);
-    if(lin(o, trans(o, sf::Vector2f(o.x+a, o.y), al), x) && sett->len>=abs(h/pa) && ox.dist>abs(h/pa)) {dc = 155+100*abs(pa); ox={abs(h/pa), rgb*sf::Color(dc,dc,dc)};}
-    pa = dot(v, rv);
-    h = dat(n, rp-o);
-    x = rp + rv*abs(h/pa);
-    if(lin(o, trans(o, sf::Vector2f(o.x, o.y+b), al), x) && sett->len>=abs(h/pa) && ox.dist>abs(h/pa)) {dc = 155+100*abs(pa); ox={abs(h/pa), rgb*sf::Color(dc,dc,dc)};}
-    o=trans(pos, sf::Vector2f(pos.x+a/2, pos.y+b/2), al);
-    pa = dot(n, rv);
-    h = dat(v, rp-o);
-    x = rp + rv*abs(h/pa);
-    if(lin(o, trans(o, sf::Vector2f(o.x-a, o.y), al), x) && sett->len>=abs(h/pa) && ox.dist>abs(h/pa)) {dc = 155+100*abs(pa); ox={abs(h/pa), rgb*sf::Color(dc,dc,dc)};}
-    pa = dot(v, rv);
-    h = dat(n, rp-o);
-    x = rp + rv*abs(h/pa);
-    if(lin(o, trans(o, sf::Vector2f(o.x, o.y-b), al), x) && sett->len>=abs(h/pa) && ox.dist>abs(h/pa)) {dc = 155+100*abs(pa); ox={abs(h/pa), rgb*sf::Color(dc,dc,dc)};}
+    float ox = sett->len; 
+    rp-=pos;
+    if((rv.y==0 && 2*abs(rp.y)>s.y) || (rv.z==0 && 2*abs(rp.z)>s.z)) return ox;
+    sf::Vector3f n(rp.x/rv.x, rp.y/rv.y, rp.z/rv.z);
+    sf::Vector3f k(0.5f*s.x/abs(rv.x), 0.5f*s.y/abs(rv.y), 0.5f*s.z/abs(rv.z));
+    sf::Vector3f t2=-n-k;
+    sf::Vector3f t1=-n+k;
+    float ss=std::max(std::max(t2.x,t2.y),t2.z);
+    float ff=std::min(std::min(t1.x,t1.y),t1.z);
+    if(ff<ss || ff<0) return ox;
+    // if(rv.y==0) std::cout<<t1.x<<' '<<t1.y<<' '<<t1.z<<"\n";
+    // if(rv.y==0) std::cout<<t2.x<<' '<<t2.y<<' '<<t2.z<<"\n";
+    ox = std::min(ss, ox);
     return ox;
+}
+
+
+
+
+
+ObjBase::ObjBase(): geom(geom_kol), cash_geom(geom_kol) {}
+
+void ObjBase::createSphear(sf::Vector3f _pos, float _r, sf::Vector3f _mat)
+{
+    objects.push_back(new SphearObj(_pos, _r, _mat));
+    objects[objects.size()-1]->push(cash_geom[0]);
+    geom[0]++;
+}
+void ObjBase::createPlane(sf::Vector3f _pos, sf::Vector3f _k, sf::Vector3f _mat)
+{
+    objects.push_back(new PlaneObj(_pos, _k, _mat));
+    objects[objects.size()-1]->push(cash_geom[3]);
+    geom[3]++;
+}
+void ObjBase::createCube(sf::Vector3f _pos, sf::Vector3f _s, sf::Vector3f _al, sf::Vector3f _mat)
+{
+    objects.push_back(new CubeObj(_pos, _s, _al, _mat));
+    objects[objects.size()-1]->push(cash_geom[4]);
+    geom[4]++;
+}
+
+int ObjBase::get_kol()
+{
+    return objects.size();
+}
+std::vector<float> ObjBase::get_geom()
+{
+    return geom;
+}
+std::vector<float> ObjBase::get_cash(int i)
+{
+    return cash_geom[i];
+}
+GeomObject* ObjBase::get_obj(int i)
+{
+    return objects[i];
+}
+
+ObjBase::~ObjBase()
+{
+    for (int i = 0; i < objects.size(); i++){delete objects[i];}
 }
