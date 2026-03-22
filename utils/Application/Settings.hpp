@@ -28,8 +28,8 @@ public:
     void rot(sf::Vector3f& a, sf::Vector3f al);
     sf::Vector3f trans(sf::Vector3f al, sf::Vector3f a={1,0,0}, sf::Vector3f o={0, 0, 0});
 
-    int W = 1200;
-    int H = 800;
+    int W = 1500;
+    int H = 900;
     int thp = 6;
     float rast =1.f;
     float len = 1500.f;

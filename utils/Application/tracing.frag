@@ -108,7 +108,7 @@ void rastor( float dst, vec3 rd, vec3 nv, int exl[2], int ext[2], inout vec3 col
     else if(ext[0]>-1) col *= pow((dst/len), 0.2);
     else 
     {
-        col = col*1; //(1+0.3*pow(dot(-rd, reflect(light, nv)), 1.0))
+        col = col*(1+0.3*pow(dot(-rd, reflect(light, nv)), 1.0)); //
         col = clamp(col+vec3(0.15)*max(0.0, pow(dot(-rd, reflect(light, nv)), 50.0)), 0.0, 1.0);
     }
 }
@@ -124,7 +124,7 @@ vec3 raytrace(vec3 rp, vec3 rd)
     exl = raycast(rp, rd, dst, nv);
     col = get_col(exl);
     if(dst==len) return clamp(col+sun, 0.0, 1.0);
-    rp += (dst-dp)*rd;dst = len; //rd = reflect(rd, nv); 
+    rp += (dst-dp)*rd; dst = len; 
 
     ext = raycast(rp, -light, dst, sun);
     rastor(dst, rd, nv, exl, ext, col);

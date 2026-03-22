@@ -34,7 +34,7 @@ target_include_directories(${PROJECT_NAME} PUBLIC utils/Application)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/utils/Materials/times.ttf ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/utils/Application/tracing.frag ${CMAKE_CURRENT_BINARY_DIR} COPYONLY)
 
-set(SFML_DIR "C:\\Users\\kiril\\Desktop\\C++\\SFML-2.6.1MGV\\lib\\cmake\\SFML")
+set(SFML_DIR "C:\\Users\\kiril\\Files\\C++\\SFML-2.6.1MGV\\lib\\cmake\\SFML")
 target_link_libraries(${project} sfml-system sfml-graphics sfml-audio)
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake_modules")
 find_package(SFML 2.6 COMPONENTS graphics network audio window system REQUIRED)
